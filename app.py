@@ -8,7 +8,7 @@ FILE_STORAGE_PATH = "media"
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('static/html/index.html')
+        self.render('static/index.html')
 
 
 def new_file():
@@ -19,18 +19,24 @@ def new_file():
 
 class SubmitHandler(tornado.web.RequestHandler):
     def post(self):
-        file = self.request.files["file1"]
-        with new_file() as fp:
-            fp.write(file[0]["body"])
-        self.set_header("Content-Type", "text/plain")
-        self.write("You wrote " + self.get_body_argument("message"))
+        if self.request.headers["Content-Type"].startswith("application/json"):
+            data = self.request.body
+            with new_file() as fp:
+                fp.write(data)
+            self.set_header("Content-Type", "text/plain")
+            self.write("You wrote {}".format(data))
+        else:
+            self.write("Content-Type has to be 'application/json")
 
 
 def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
-        (r"/submit", SubmitHandler)
-    ])
+        (r"/submit", SubmitHandler),
+    ],
+        static_path=os.path.join(os.path.dirname(__file__), "static"),
+        static_url_prefix='/static/'
+    )
 
 
 if __name__ == "__main__":
