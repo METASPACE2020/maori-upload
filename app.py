@@ -43,5 +43,5 @@ if __name__ == "__main__":
     if not os.path.isdir(FILE_STORAGE_PATH):
         os.mkdir(FILE_STORAGE_PATH)
     app = make_app()
-    app.listen(8888)
+    app.listen(9777)
     tornado.ioloop.IOLoop.current().start()
