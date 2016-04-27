@@ -5,5 +5,6 @@ It is licensed under the Apache 2.0 license.
 
 ## Instructions
 - Clone
+- Run `npm install && npm run build`
 - Run `python app.py`
-- Open browser at `localhost:8888`
+- Open browser at `localhost:9777`
