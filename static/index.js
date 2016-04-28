@@ -9,7 +9,7 @@ domready(function() {
       JSONEditor = window.JSONEditor;
   } catch(ex) {}
 
-  JSONEditor.defaults.theme = "bootstrap3";
+  JSONEditor.defaults.theme = "foundation5";
   JSONEditor.defaults.iconlib = "fontawesome4";
 
   function post(path, params, method) {
