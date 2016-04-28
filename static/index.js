@@ -45,10 +45,18 @@ domready(function() {
   });
 
   document.getElementById('submit').addEventListener('click', function () {
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.open("POST", "/submit");
-      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      xmlhttp.send(JSON.stringify(editor.getValue()));
+      var data_form = document.forms[0];
+      if (data_form.elements["imzml_file"].value && data_form.elements["ibd_file"].value) {
+          var xmlhttp = new XMLHttpRequest();
+          xmlhttp.open("POST", "/submit");
+          xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+          xmlhttp.send(JSON.stringify(editor.getValue()));
+          console.log(xmlhttp.response);
+          data_form.submit();
+      } else {
+          alert("Please select the files to upload");
+      }
+
   });
 
 });

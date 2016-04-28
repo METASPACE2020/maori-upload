@@ -1,5 +1,5 @@
 {
-  "title": "Dataset Submission",
+  "title": "Metadata Submission",
   "type": "object",
   "properties": {
     "Sample_Information": {

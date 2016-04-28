@@ -8,6 +8,13 @@
 
     <body>
         <h1>Upload</h1>
+        <h3>Dataset submission</h3>
+        <form enctype="multipart/form-data" action="/submit" method="POST">
+            imzML file:
+            <input type="file" name="imzml_file">
+            ibd file:
+            <input type="file" name="ibd_file">
+        </form>
         <div id='editor_holder'></div>
         <button id="submit">Submit</button>
     </body>
