@@ -48,8 +48,8 @@
         "Sample_Growth_Conditions": {
           "type": "string",
           "enum": [
-            "Cell_Culture_2D",
-            "Cell_Culture_3D",
+            "Cultured_2D",
+            "Cultured_3D",
             "Caged",
             "Other => <free text>"
           ]
@@ -62,18 +62,19 @@
         "Sample_Stabilisation": {
           "type": "string",
           "enum": [
-            "Fresh-frozen",
-            "Formalin Fixation",
-            "Formalin Fixed Parafin Embedded",
-            "Other = <free text>"
+            "Fresh_Frozen",
+            "Formalin_Fixed",
+            "Formalin_Fixed_Paraffin_Embedded",
+            "Other => <free text>"
           ]
         },
         "Tissue_Modification": {
           "type": "string",
           "enum": [
             "none",
-            "derivitisation",
-            "trypsinisation"
+            "Derivatisation",
+            "Trypsinisation",
+            "Other => <free text>"
           ]
         },
         "MALDI_Matrix": {
@@ -93,11 +94,12 @@
           "type": "string",
           "enum": [
             "none",
-            "Automatic_Spray Robot",
+            "Spray_Robot",
             "Airbrush",
             "Sublimation",
-            "Micro-Spotting",
-            "Sieving"
+            "Micro_Spotting",
+            "Sieving",
+            "Other => <free text>"
           ]
         }
       }
@@ -105,7 +107,7 @@
     "MS_Analysis": {
       "type": "object",
       "properties": {
-        "Ionisation Source": {
+        "Ionisation_Source": {
           "type": "string",
           "enum": [
             "MALDI",
@@ -123,8 +125,9 @@
             "FTICR",
             "Orbitrap",
             "QTOF",
-            "TOF-linear",
-            "TOF-reflector"
+            "TOF_Linear",
+            "TOF_Reflector",
+            "Other => <free text>"
           ]
         },
         "Detector_Resolving_Power": {
@@ -134,7 +137,7 @@
             "mz": {
               "type": "number"
             },
-            "resolving_power": {
+            "Resolving_Power": {
               "type": "number"
             }
           }
@@ -189,18 +192,18 @@
       "type": "object",
       "properties": {
         "Publication_DOI": {
-          "type": "integer"
-        },
-        "Sample_Description_freetext": {
           "type": "string"
         },
-        "Sample_Preparation_freetext": {
+        "Sample_Description_Freetext": {
           "type": "string"
         },
-        "Additional_Information_freetext": {
+        "Sample_Preparation_Freetext": {
           "type": "string"
         },
-        "Expected_Molecules_freetext": {
+        "Additional_Information_Freetext": {
+          "type": "string"
+        },
+        "Expected_Molecules_Freetext": {
           "type": "string"
         }
       }
