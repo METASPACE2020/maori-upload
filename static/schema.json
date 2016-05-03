@@ -7,6 +7,7 @@
       "properties": {
         "Organism": {
           "type": "string",
+          "required": true,
           "enum": [
             "Homo_sapiens_(Human)",
             "Mus_musculus_(Mouse)",
@@ -18,6 +19,7 @@
         },
         "Organism_Part": {
           "type": "string",
+          "required": true,
           "enum": [
             "Whole_Organism",
             "Brain",
@@ -37,6 +39,7 @@
         },
         "Condition": {
           "type": "string",
+          "required": true,
           "enum": [
             "Wildtype",
             "Diseased",
@@ -61,6 +64,7 @@
       "properties": {
         "Sample_Stabilisation": {
           "type": "string",
+          "required": true,
           "enum": [
             "Fresh_Frozen",
             "Formalin_Fixed",
@@ -70,6 +74,7 @@
         },
         "Tissue_Modification": {
           "type": "string",
+          "required": true,
           "enum": [
             "none",
             "Derivatisation",
@@ -79,6 +84,7 @@
         },
         "MALDI_Matrix": {
           "type": "string",
+          "required": true,
           "enum": [
             "none",
             "2,5-dihydroxybenzoic_acid_(DHB)",
@@ -92,6 +98,7 @@
         },
         "MALDI_Matrix_Application": {
           "type": "string",
+          "required": true,
           "enum": [
             "none",
             "Spray_Robot",
@@ -109,6 +116,7 @@
       "properties": {
         "Ionisation_Source": {
           "type": "string",
+          "required": true,
           "enum": [
             "MALDI",
             "LDI",
@@ -121,6 +129,7 @@
         },
         "Analyzer": {
           "type": "string",
+          "required": true,
           "enum": [
             "FTICR",
             "Orbitrap",
@@ -135,10 +144,12 @@
           "title": "Detector Resolving Power",
           "properties": {
             "mz": {
-              "type": "number"
+              "type": "number",
+              "required": true
             },
             "Resolving_Power": {
-              "type": "number"
+              "type": "number",
+              "required": true
             }
           }
         }
@@ -151,13 +162,16 @@
           "type": "object",
           "properties": {
             "Surname": {
-              "type": "string"
+              "type": "string",
+              "required": true
             },
             "First_Name": {
-              "type": "string"
+              "type": "string",
+              "required": true
             },
             "Email": {
               "type": "string"
+              "required": true
             }
           }
         },
@@ -179,6 +193,7 @@
     },
     "Metabolite_Database": {
       "type": "string",
+      "required" :true,
       "enum": [
         "ChEBI",
         "HMDB",
