@@ -20,8 +20,8 @@ def new_session_id():
     session_id = None
     # the very unlikely case that the UUID has been generated before
     while session_id is None or session_id in dirnames:
-        session_id = uuid4()
-    return str(session_id)
+        session_id = str(uuid4())
+    return session_id
 
 
 def new_json_file(session_id):
