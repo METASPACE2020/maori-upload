@@ -145,11 +145,16 @@
           "properties": {
             "mz": {
               "type": "number",
-              "required": true
+              "required": true,
+              "minimum": 50,
+              "maximum": 5000,
+              "default": "200"
             },
             "Resolving_Power": {
               "type": "number",
-              "required": true
+              "required": true,
+              "minimum": 10000,
+              "maximum": 1000000
             }
           }
         }
