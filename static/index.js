@@ -45,6 +45,10 @@ domready(function() {
   });
 
   document.getElementById('submit').addEventListener('click', function () {
+      editor.setOption('show_errors','always');
+      if (editor.validate().length > 0)
+          return;
+
       var data_form = document.forms[0];
       if (data_form.elements["imzml_file"].value && data_form.elements["ibd_file"].value) {
           var xmlhttp = new XMLHttpRequest();

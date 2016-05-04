@@ -163,15 +163,15 @@
           "properties": {
             "Surname": {
               "type": "string",
-              "required": true
+              "minLength": 1
             },
             "First_Name": {
               "type": "string",
-              "required": true
+              "minLength": 1
             },
             "Email": {
               "type": "string",
-              "required": true
+              "minLength": 1
             }
           }
         },
