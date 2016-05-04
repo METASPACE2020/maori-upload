@@ -170,7 +170,7 @@
               "required": true
             },
             "Email": {
-              "type": "string"
+              "type": "string",
               "required": true
             }
           }
@@ -191,17 +191,27 @@
         }
       }
     },
-    "Metabolite_Database": {
-      "type": "string",
-      "required" :true,
-      "enum": [
-        "ChEBI",
-        "HMDB",
-        "LIPID_MAPS",
-        "SwissLipids",
-        "DrugBank",
-        "Other => <free text>"
-      ]
+    "metaspace_options":{
+      "type": "object",
+      "properties":{
+        "Metabolite_Database": {
+          "type": "string",
+          "required" :true,
+          "enum": [
+            "ChEBI",
+            "HMDB",
+           "LIPID_MAPS",
+            "SwissLipids",
+            "DrugBank",
+            "Other => <free text>"
+           ]
+       },
+       "Alpha-tester":{
+          "type": "boolean",
+          "required": true,
+          "default": false
+       }
+      }
     },
     "Additional_Information": {
       "type": "object",
