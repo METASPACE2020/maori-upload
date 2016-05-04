@@ -195,17 +195,25 @@
       "type": "object",
       "properties":{
         "Metabolite_Database": {
-          "type": "string",
-          "required" :true,
-          "enum": [
-            "ChEBI",
-            "HMDB",
-           "LIPID_MAPS",
-            "SwissLipids",
-            "DrugBank",
-            "Other => <free text>"
-           ]
-       },
+            "required" :true,
+            "oneOf": [
+                {
+                    "title": "generic",
+                    "type": "string",
+                    "enum": [
+                        "ChEBI",
+                        "HMDB",
+                        "LIPID_MAPS",
+                        "SwissLipids",
+                        "DrugBank"
+                    ]},
+                {
+                    "title": "custom (free text)",
+                    "type": "string",
+                    "minLength": 1
+                }
+            ]
+        },
        "Alpha-tester":{
           "type": "boolean",
           "required": true,
