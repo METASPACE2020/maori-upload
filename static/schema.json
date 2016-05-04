@@ -4,6 +4,9 @@
   "properties": {
     "Sample_Information": {
       "type": "object",
+      "options": {
+        "collapsed": true
+      },
       "properties": {
         "Organism": {
           "type": "string",
@@ -61,6 +64,9 @@
     },
     "Sample_Preparation": {
       "type": "object",
+      "options": {
+        "collapsed": true
+      },
       "properties": {
         "Sample_Stabilisation": {
           "type": "string",
@@ -113,6 +119,9 @@
     },
     "MS_Analysis": {
       "type": "object",
+      "options": {
+        "collapsed": true
+      },
       "properties": {
         "Ionisation_Source": {
           "type": "string",
@@ -145,6 +154,7 @@
           "properties": {
             "mz": {
               "type": "number",
+              "format": "number",
               "required": true,
               "minimum": 50,
               "maximum": 5000,
@@ -152,6 +162,7 @@
             },
             "Resolving_Power": {
               "type": "number",
+              "format": "number",
               "required": true,
               "minimum": 10000,
               "maximum": 1000000
@@ -162,6 +173,9 @@
     },
     "Submitted_By": {
       "type": "object",
+      "options": {
+        "collapsed": true
+      },
       "properties": {
         "Submitter": {
           "type": "object",
@@ -198,6 +212,9 @@
     },
     "metaspace_options":{
       "type": "object",
+      "options": {
+        "collapsed": true
+      },
       "properties":{
         "Metabolite_Database": {
             "required" :true,
@@ -222,12 +239,16 @@
        "Alpha-tester":{
           "type": "boolean",
           "required": true,
-          "default": false
+          "default": false,
+          "format": "checkbox"
        }
       }
     },
     "Additional_Information": {
       "type": "object",
+      "options": {
+        "collapsed": true
+      },
       "properties": {
         "Publication_DOI": {
           "type": "string"
