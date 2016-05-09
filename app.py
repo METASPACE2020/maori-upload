@@ -82,7 +82,8 @@ def make_app():
         (r"/submit", SubmitHandler),
     ],
         static_path=join(dirname(__file__), "static"),
-        static_url_prefix='/static/'
+        static_url_prefix='/static/',
+        debug=True
     )
 
 

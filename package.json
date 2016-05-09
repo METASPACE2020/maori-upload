@@ -3,10 +3,6 @@
   "version": "0.0.1",
   "description": "Upload webapp for Maori project",
   "main": "app.py",
-  "scripts": {
-    "build": "browserify static/index.js -d -p [minifyify --no-map] > static/bundle.js",
-    "build-dev": "browserify static/index.js > static/bundle.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alexandrovteam/maori-upload.git"
@@ -18,11 +14,15 @@
   },
   "homepage": "https://github.com/alexandrovteam/maori-upload#readme",
   "devDependencies": {
-    "browserify": "^13.0.0",
-    "minifyify": "^7.3.3"
+    "babel-loader": "^6.2.4",
+    "json-loader": "^0.5.4",
+    "webpack": "^1.13.0"
   },
   "dependencies": {
     "domready": "^1.0.8",
-    "json-editor": "^0.7.25"
+    "jquery": "^2.2.3",
+    "react": "^15.0.2",
+    "react-dom": "^15.0.2",
+    "react-jsonschema-form": "^0.29.1"
   }
 }
