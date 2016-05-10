@@ -4,19 +4,39 @@ import { render } from 'react-dom'
 import Form from 'react-jsonschema-form'
 import $ from 'jquery'
 
-const SelectOrFreeTextWidget = ({
-  id, options, placeholder,
-  value, required, onChange
-}) => {
+/*
+   Default form validation figures out that custom values for enums
+   are not valid according to the JSON schema.
+
+   We monkey-patch Form class to use another schema for validation,
+   which differs from the original in that 'enum' entries are just deleted.
+*/
+const defaultFormValidate = Form.prototype.validate;
+Form.prototype.validate = function(formData, schema) {
+    console.log(formData);
+    return defaultFormValidate.call(this, formData,
+                                    this.props.validationSchema);
+};
+
+class SelectOrFreeTextWidget extends React.Component {
+render() {
+  /*
+     <select> element is responsible for checking if the value is 'Other';
+     if it is, it sets this.state.hasCustomValue to true
+     and then fires an onChange event
+  */
+  const {id, options, placeholder,
+         value, required, onChange} = this.props;
+
   let customValueInput;
   let selectValue = value;
 
   const customValueIdentifier = 'Other...'
 
-  if (options.map(opt => opt.value).indexOf(value) == -1) {
+  if (this.state && this.state['hasCustomValue']) {
     customValueInput = (
       <input className="form-control"
-           value={value == customValueIdentifier ? '' : value}
+           value={value}
            placeholder="Enter custom value"
            style={{marginTop: '5px'}}
            required={required}
@@ -34,7 +54,14 @@ const SelectOrFreeTextWidget = ({
         title={placeholder}
         value={selectValue}
         required={required}
-        onChange={(e) => {onChange(e.target.value);}}>
+        onChange={(e) => {
+          let val = e.target.value;
+          if (val == customValueIdentifier) {
+            this.setState({'hasCustomValue': true}, () => onChange(''));
+          } else {
+            this.setState({'hasCustomValue': false}, () => onChange(val));
+          }
+        }}>
       {
         options.map(({value, label}, i) => {
           return <option key={i} value={value}>{label}</option>;
@@ -45,7 +72,7 @@ const SelectOrFreeTextWidget = ({
       {customValueInput}
     </div>
   );
-}
+}}
 
 const DatasetUploadForm = () => (
   <div>
@@ -65,10 +92,8 @@ const DatasetUploadForm = () => (
   </div>
 );
 
-const MetadataForm = ({schema, uiSchema, onSubmit}) => (
-  <Form schema={schema}
-        uiSchema={uiSchema}
-        onSubmit={onSubmit}/>
+const MetadataForm = (props) => (
+  <Form {...props} />
 );
 
 const onMetadataFormSubmit = ({formData}) => {
@@ -103,13 +128,35 @@ function getUISchema(schema) {
     }
 }
 
+function getValidationSchema(schema) {
+    switch (schema.type) {
+        case 'object':
+            let result = {};
+            for (var prop in schema.properties)
+                result[prop] = getValidationSchema(schema.properties[prop]);
+            return Object.assign({}, schema, {"properties": result});
+        case 'string':
+            if ('enum' in schema) {
+                let result = Object.assign({}, schema, {'minLength': 1});
+                delete result['enum']
+                return result;
+            }
+            return schema;
+        default:
+            return schema;
+    }
+}
+
 domready(() => {
 
     let schema = require("./schema.json");
     let uiSchema = getUISchema(schema); // modifies enums with 'Other => ...'
+    let validationSchema = getValidationSchema(schema);
+    console.log(validationSchema)
 
     render(<App schema={schema}
-                uiSchema={uiSchema}/>,
+                uiSchema={uiSchema}
+                validationSchema={validationSchema}/>,
            document.getElementById("app-container"));
 
     $('legend').click( function() {

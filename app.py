@@ -83,7 +83,8 @@ def make_app():
     ],
         static_path=join(dirname(__file__), "static"),
         static_url_prefix='/static/',
-        debug=True
+        debug=True,
+        compress_response=True
     )
 
 
