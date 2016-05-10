@@ -76,7 +76,10 @@ render() {
 
 const DatasetUploadForm = () => (
   <div>
-    <form enctype="multipart/form-data" action="/submit" method="POST">
+    <form id="upload-form"
+          action="/submit"
+          method="post"
+          encType="multipart/form-data">
       <fieldset>
         <legend>Dataset submission</legend>
 
@@ -97,7 +100,19 @@ const MetadataForm = (props) => (
 );
 
 const onMetadataFormSubmit = ({formData}) => {
-  console.log(formData)
+  const data_form = document.getElementById('upload-form');
+  if (data_form.elements["imzml_file"].value &&
+      data_form.elements["ibd_file"].value)
+  {
+    let xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "/submit");
+    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xmlhttp.send(JSON.stringify(formData));
+    console.log(xmlhttp.response);
+    data_form.submit();
+  } else {
+    alert("Please select the files to upload");
+  }
 };
 
 const App = (props) => (
@@ -163,25 +178,4 @@ domready(() => {
         $(this).siblings().toggle();
         return false;
     });
-
-  /*
-  document.getElementById('submit').addEventListener('click', function () {
-    editor.setOption('show_errors','always');
-    if (editor.validate().length > 0)
-      return;
-
-    var data_form = document.forms[0];
-    if (data_form.elements["imzml_file"].value && data_form.elements["ibd_file"].value) {
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.open("POST", "/submit");
-      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      xmlhttp.send(JSON.stringify(editor.getValue()));
-      console.log(xmlhttp.response);
-      data_form.submit();
-    } else {
-      alert("Please select the files to upload");
-    }
-
-  });*/
-
 });
