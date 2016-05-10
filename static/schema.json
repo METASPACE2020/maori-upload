@@ -4,9 +4,6 @@
   "properties": {
     "Sample_Information": {
       "type": "object",
-      "options": {
-        "collapsed": true
-      },
       "properties": {
         "Organism": {
           "type": "string",
@@ -64,9 +61,6 @@
     },
     "Sample_Preparation": {
       "type": "object",
-      "options": {
-        "collapsed": true
-      },
       "properties": {
         "Sample_Stabilisation": {
           "type": "string",
@@ -119,9 +113,6 @@
     },
     "MS_Analysis": {
       "type": "object",
-      "options": {
-        "collapsed": true
-      },
       "properties": {
         "Ionisation_Source": {
           "type": "string",
@@ -171,9 +162,6 @@
     },
     "Submitted_By": {
       "type": "object",
-      "options": {
-        "collapsed": true
-      },
       "properties": {
         "Submitter": {
           "type": "object",
@@ -210,9 +198,6 @@
     },
     "metaspace_options":{
       "type": "object",
-      "options": {
-        "collapsed": true
-      },
       "properties":{
         "Metabolite_Database": {
             "required" :true,
@@ -236,9 +221,6 @@
     },
     "Additional_Information": {
       "type": "object",
-      "options": {
-        "collapsed": true
-      },
       "properties": {
         "Publication_DOI": {
           "type": "string"
