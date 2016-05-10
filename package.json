@@ -24,5 +24,11 @@
     "react": "^15.0.2",
     "react-dom": "^15.0.2",
     "react-jsonschema-form": "^0.29.1"
+  },
+  "scripts": {
+      "build": "webpack -p",
+      "build-dev": "webpack -d",
+      "dev": "webpack -d -w",
+      "watch": "webpack -p -w"
   }
 }
