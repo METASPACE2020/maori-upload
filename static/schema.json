@@ -148,7 +148,7 @@
               "required": true,
               "minimum": 50,
               "maximum": 5000,
-              "default": "200"
+              "default": 200
             },
             "Resolving_Power": {
               "type": "number",
@@ -168,15 +168,15 @@
           "properties": {
             "Surname": {
               "type": "string",
-              "minLength": 1
+              "required": true
             },
             "First_Name": {
               "type": "string",
-              "minLength": 1
+              "required": true
             },
             "Email": {
               "type": "string",
-              "minLength": 1
+              "required": true
             }
           }
         },
@@ -201,28 +201,21 @@
       "properties":{
         "Metabolite_Database": {
             "required" :true,
-            "oneOf": [
-                {
-                    "title": "generic",
-                    "type": "string",
-                    "enum": [
-                        "ChEBI",
-                        "HMDB",
-                        "LIPID_MAPS",
-                        "SwissLipids",
-                        "DrugBank"
-                    ]},
-                {
-                    "title": "custom (free text)",
-                    "type": "string",
-                    "minLength": 1
-                }
+            "type": "string",
+            "enum": [
+                "ChEBI",
+                "HMDB",
+                "LIPID_MAPS",
+                "SwissLipids",
+                "DrugBank",
+                "Other => <free text>"
             ]
         },
        "Alpha-tester":{
           "type": "boolean",
           "required": true,
-          "default": false
+          "default": false,
+          "format": "checkbox"
        }
       }
     },

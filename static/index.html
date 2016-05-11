@@ -1,20 +1,45 @@
+<!DOCTYPE html>
 <html>
     <head>
-    <link rel='stylesheet' href='//cdn.jsdelivr.net/foundation/5.0.2/css/foundation.min.css'>
-    <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css'>
-    <script src="static/bundle.js"></script>
+        <link rel='stylesheet' href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.6/spacelab/bootstrap.min.css"/>
+
+        <!-- copy style for form-group from col-sm-6 -->
+        <style type="text/css">
+         @media (min-width: 768px) {
+             form > .form-group > fieldset > .form-group.field-object {
+                 float: left;
+                 width: 50%;
+                 position: relative;
+                 min-height: 1px;
+                 padding-left: 15px;
+                 padding-right: 15px;
+             }
+         }
+
+         legend {
+             background: #fff;
+             padding: 2px 4px;
+         }
+
+         form > fieldset > legend,
+         form > .form-group > fieldset > legend,
+         form > .form-group > fieldset > .form-group > fieldset > legend {
+             margin-bottom: 0.5em;
+             float: none;
+         }
+
+         form > fieldset,
+         form > .form-group > fieldset,
+         form > .form-group > fieldset > .form-group > fieldset {
+             border:1px solid #999;
+             box-shadow:0 0 10px #999;
+             padding: 10px;
+         }
+        </style>
     </head>
 
     <body>
-        <h1>Upload</h1>
-        <h3>Dataset submission</h3>
-        <form enctype="multipart/form-data" action="/submit" method="POST">
-            imzML file:
-            <input type="file" name="imzml_file">
-            ibd file:
-            <input type="file" name="ibd_file">
-        </form>
-        <div id='editor_holder'></div>
-        <button id="submit">Submit</button>
+        <div id="app-container"></div>
+        <script src="static/bundle.js"></script>
     </body>
 </html>
