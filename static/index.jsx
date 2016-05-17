@@ -3,6 +3,7 @@ import React from 'react'
 import { render } from 'react-dom'
 import Form from 'react-jsonschema-form'
 import $ from 'jquery'
+import customValidation from './validation'
 
 /*
    Default form validation figures out that custom values for enums
@@ -171,6 +172,7 @@ domready(() => {
 
     render(<App schema={schema}
                 uiSchema={uiSchema}
+                validate={customValidation}
                 validationSchema={validationSchema}/>,
            document.getElementById("app-container"));
 
