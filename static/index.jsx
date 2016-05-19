@@ -5,6 +5,8 @@ import Form from 'react-jsonschema-form'
 import $ from 'jquery'
 import customValidation from './validation'
 
+const LOCAL_STORAGE_KEY = "latestMetadataSubmission";
+
 /*
    Default form validation figures out that custom values for enums
    are not valid according to the JSON schema.
@@ -120,12 +122,16 @@ const onMetadataFormSubmit = ({formData}) => {
       return;
   }
   // everything ok, do it
+  const serializedFormData = JSON.stringify(formData);
   let xmlhttp = new XMLHttpRequest();
   xmlhttp.open("POST", "/submit");
   xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  xmlhttp.send(JSON.stringify(formData));
+  xmlhttp.send(serializedFormData);
   console.log(xmlhttp.response);
   data_form.submit();
+  if (typeof Storage !== "undefined") {
+      localStorage.setItem(LOCAL_STORAGE_KEY, serializedFormData);
+  } else {/* not supported by browser */}
 };
 
 const App = (props) => (
@@ -190,11 +196,18 @@ domready(() => {
     let validationSchema = getValidationSchema(schema);
     console.log(validationSchema)
 
-    render(<App schema={schema}
-                uiSchema={uiSchema}
-                validate={customValidation}
-                validationSchema={validationSchema}/>,
-           document.getElementById("app-container"));
+    if (typeof Storage !== "undefined") {
+        const previousSubmission = localStorage.getItem(LOCAL_STORAGE_KEY);
+        console.log(previousSubmission);
+        const parsedFormData = JSON.parse(previousSubmission);
+        console.log(parsedFormData);
+        render(<App schema={schema}
+                    formData={parsedFormData}  // can handle null
+                    uiSchema={uiSchema}
+                    validate={customValidation}
+                    validationSchema={validationSchema}/>,
+               document.getElementById("app-container"));
+    } else {/* not supported by browser */}
 
     $('legend').click( function() {
         $(this).siblings().toggle();
