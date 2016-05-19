@@ -1,6 +1,4 @@
-function validate(formData, errors) {
-    console.log(formData);
-    console.log(errors);
+export default function validate(formData, errors) {
     const sampleInformation = formData.Sample_Information;
     const organism = sampleInformation.Organism;
     const organismPart = sampleInformation.Organism_Part;
@@ -76,8 +74,9 @@ function validateGrowthConditions(growthCondition, organism) {
         "Danio_rerio_(Zebrafish)",
         "Arabidopsis_thaliana_(thale_cress)"
     ];
-    if ((organism == "Homo_sapiens_(Human)" && notHumanConditions.indexOf(growthCondition) !== -1) || 
-        (["Cultured_2D", "Cultured_3D"].indexOf(growthCondition) !== -1 && notCulturable.indexOf(organism) !== -1) || (growthCondition == "Caged" && notCageable.indexOf(organism) !== -1)) {
+    if ((organism == "Homo_sapiens_(Human)" && notHumanConditions.indexOf(growthCondition) !== -1) ||
+        (["Cultured_2D", "Cultured_3D"].indexOf(growthCondition) !== -1 && notCulturable.indexOf(organism) !== -1) ||
+        (growthCondition == "Caged" && notCageable.indexOf(organism) !== -1)) {
         errors.push("not applicable for " + organism);
     }
     return errors;
@@ -98,5 +97,3 @@ function validateMaldiMatrixApplication(application, source) {
         return [];
     }
 }
-
-export default validate;
