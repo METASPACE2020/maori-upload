@@ -102,18 +102,30 @@ const MetadataForm = (props) => (
 
 const onMetadataFormSubmit = ({formData}) => {
   const data_form = document.getElementById('upload-form');
-  if (data_form.elements["imzml_file"].value &&
-      data_form.elements["ibd_file"].value)
-  {
-    let xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", "/submit");
-    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xmlhttp.send(JSON.stringify(formData));
-    console.log(xmlhttp.response);
-    data_form.submit();
-  } else {
-    alert("Please select the files to upload");
+  const imzml_path = data_form.elements["imzml_file"].value;
+  const ibd_path = data_form.elements["ibd_file"].value;
+  if (!(imzml_path && ibd_path)) {
+      alert("Please select the files to upload");
+      return;
   }
+  if (!imzml_path.toLowerCase().endsWith(".imzml") ||
+      !ibd_path.toLowerCase().endsWith(".ibd")) {
+      alert("Files have incorrect extensions: '.ibd' and '.imzml' required");
+      return;
+  }
+  const imzml_fn = getFilename(data_form.elements["imzml_file"].value);
+  const ibd_fn = getFilename(data_form.elements["ibd_file"].value);
+  if (imzml_fn !== ibd_fn) {
+      alert("File names do not match");
+      return;
+  }
+  // everything ok, do it
+  let xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("POST", "/submit");
+  xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  xmlhttp.send(JSON.stringify(formData));
+  console.log(xmlhttp.response);
+  data_form.submit();
 };
 
 const App = (props) => (
@@ -122,6 +134,14 @@ const App = (props) => (
     <MetadataForm onSubmit={onMetadataFormSubmit} {...props} />
   </div>
 );
+
+/**
+ * Extract filename from file path (without extension)
+ */
+function getFilename(path) {
+    const fn = path.replace(/^.*[\\\/]/, '');
+    return fn.substr(0, fn.lastIndexOf('.'));
+}
 
 function getUISchema(schema) {
     switch (schema.type) {
