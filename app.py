@@ -1,6 +1,10 @@
 import os
 from os.path import dirname, exists, isdir, join, splitext
 from uuid import uuid4
+import base64
+import hmac
+import hashlib
+import json
 
 import tornado.ioloop
 import tornado.web
@@ -10,8 +14,9 @@ FILE_STORAGE_PATH = "media"
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        if not self.get_cookie('session_id'):
-            self.set_cookie('session_id', new_session_id())
+        # if not self.get_cookie('session_id'):
+        # self.set_cookie('session_id', new_session_id())
+        self.set_cookie('session_id', str(uuid4()))
         self.render('static/index.html')
 
 
@@ -76,10 +81,47 @@ class SubmitHandler(tornado.web.RequestHandler):
             self.write("Error: Content-Type has to be 'application/json' or 'multipart/form-data'")
 
 
+class UploadHandler(tornado.web.RequestHandler):
+    AWS_CLIENT_SECRET_KEY = os.getenv('AWS_CLIENT_SECRET_KEY')
+
+    def sign_policy(self, policy):
+        """ Sign and return the policy document for a simple upload.
+        http://aws.amazon.com/articles/1434/#signyours3postform """
+        signed_policy = base64.b64encode(policy)
+        signature = base64.b64encode(hmac.new(
+            self.AWS_CLIENT_SECRET_KEY, signed_policy, hashlib.sha1).
+            digest())
+        return {'policy': signed_policy, 'signature': signature}
+
+    def sign_headers(self, headers):
+        """ Sign and return the headers for a chunked upload. """
+        return {
+            'signature': base64.b64encode(hmac.new(
+                self.AWS_CLIENT_SECRET_KEY, headers, hashlib.sha1).
+                digest())
+        }
+
+    def post(self):
+        """ Route for signing the policy document or REST headers. """
+        request_payload = json.loads(self.request.body)
+        if request_payload.get('headers'):
+            response_data = self.sign_headers(request_payload['headers'])
+        else:
+            response_data = self.sign_policy(self.request.body)
+        return self.write(response_data)
+
+
+# class UploadMainHandler(tornado.web.RequestHandler):
+#     def get(self):
+#         self.render('static/upload-index.html')
+
+
 def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
         (r"/submit", SubmitHandler),
+        (r'/s3/sign', UploadHandler),
+        # (r'/upload', UploadMainHandler),
     ],
         static_path=join(dirname(__file__), "static"),
         static_url_prefix='/static/',
