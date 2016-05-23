@@ -1,43 +1,45 @@
 export default function validate(formData, errors) {
-    const sampleInformation = formData.Sample_Information;
-    const organism = sampleInformation.Organism;
-    const organismPart = sampleInformation.Organism_Part;
-    const growthCondition = sampleInformation.Sample_Growth_Conditions;
-    const organismPartErrors = validateOrganismPart(organism, organismPart);
-    for (let i = 0; i < organismPartErrors.length; i++) {
-        errors.Sample_Information.Organism_Part.addError(organismPartErrors[i]);
-    }
-    const growthConditionErrors = validateGrowthConditions(growthCondition, organism);
-    for (let i = 0; i < growthConditionErrors.length; i++) {
-        errors.Sample_Information.Sample_Growth_Conditions.addError(growthConditionErrors[i]);
+    function runChecks(validator, paths, errorDisplayIndex, subObj=(x) => x) {
+        const field = (f) => (typeof f === 'string') ? (o) => o[f] : f;
+        paths = paths.map(field);
+        subObj = field(subObj);
+        const data = paths.map((path) => path(subObj(formData)));
+        let formErrors = paths[errorDisplayIndex](subObj(errors));
+        validator(...data).forEach((e) => formErrors.addError(e));
     }
 
-    const samplePrep = formData.Sample_Preparation;
-    const matrix = samplePrep.MALDI_Matrix;
-    const application = samplePrep.MALDI_Matrix_Application;
-    const source = formData.MS_Analysis.Ionisation_Source;
-    var maldiMatrixErrors = validateMaldiMatrix(matrix, source);
-    for (let i = 0; i < maldiMatrixErrors.length; i++) {
-        errors.Sample_Preparation.MALDI_Matrix.addError(maldiMatrixErrors[i]);
-    }
-    var maldiMatrixApplicationErrors = validateMaldiMatrixApplication(application, source);
-    for (let i = 0; i < maldiMatrixApplicationErrors.length; i++) {
-        errors.Sample_Preparation.MALDI_Matrix_Application.addError(maldiMatrixApplicationErrors[i]);
-    }
+    runChecks(validateOrganismPart,
+              ['Organism', 'Organism_Part'], 1,
+              'Sample_Information');
+
+    runChecks(validateGrowthConditions,
+              ['Sample_Growth_Conditions', 'Organism'], 0,
+              'Sample_Information');
+
+    runChecks(validateMaldiMatrix, [
+        (x) => x.Sample_Preparation.MALDI_Matrix,
+        (x) => x.MS_Analysis.Ionisation_Source
+    ], 0);
+
+    runChecks(validateMaldiMatrixApplication, [
+        (x) => x.Sample_Preparation.MALDI_Matrix_Application,
+        (x) => x.MS_Analysis.Ionisation_Source
+    ], 0);
+
     return errors;
 }
 
 function validateOrganismPart(organism, organismPart) {
     let errors = [];
-    const plants = ["Arabidopsis_thaliana_(thale_cress)"];
-    const notPlants = [
+    const plants = new Set(["Arabidopsis_thaliana_(thale_cress)"]);
+    const notPlants = new Set([
         "Homo_sapiens_(Human)",
         "Mus_musculus_(Mouse)",
         "Rattus_norvegicus_(Rat)",
         "Danio_rerio_(Zebrafish)"
-    ];
-    const plantParts = ["Leaf", "Stem", "Root"];
-    const notPlantParts = [
+    ]);
+    const plantParts = new Set(["Leaf", "Stem", "Root"]);
+    const notPlantParts = new Set([
         "Brain",
         "Kidney",
         "Eye",
@@ -47,9 +49,10 @@ function validateOrganismPart(organism, organismPart) {
         "Lung",
         "Lymph_Node",
         "Testis"
-    ];
-    if ((plants.indexOf(organism) !== -1 && notPlantParts.indexOf(organismPart) !== -1) ||
-        (notPlants.indexOf(organism) !== -1 && plantParts.indexOf(organismPart) !== -1)) {
+    ]);
+    if ((plants.has(organism) && notPlantParts.has(organismPart)) ||
+        (notPlants.has(organism) && plantParts.has(organismPart)))
+    {
         errors = ["is not part of " + organism];
     }
     return errors;
@@ -57,26 +60,28 @@ function validateOrganismPart(organism, organismPart) {
 
 function validateGrowthConditions(growthCondition, organism) {
     let errors = [];
-    const notHumanConditions = [
+    const notHumanConditions = new Set([
         "Cultured_2D",
         "Cultured_3D",
         "Caged"
-    ];
-    const notCulturable = [
+    ]);
+    const notCulturable = new Set([
         "Homo_sapiens_(Human)",
         "Mus_musculus_(Mouse)",
         "Rattus_norvegicus_(Rat)",
         "Danio_rerio_(Zebrafish)",
         "Arabidopsis_thaliana_(thale_cress)"
-    ];
-    const notCageable = [
+    ]);
+    const notCageable = new Set([
         "Homo_sapiens_(Human)",
         "Danio_rerio_(Zebrafish)",
         "Arabidopsis_thaliana_(thale_cress)"
-    ];
-    if ((organism == "Homo_sapiens_(Human)" && notHumanConditions.indexOf(growthCondition) !== -1) ||
-        (["Cultured_2D", "Cultured_3D"].indexOf(growthCondition) !== -1 && notCulturable.indexOf(organism) !== -1) ||
-        (growthCondition == "Caged" && notCageable.indexOf(organism) !== -1)) {
+    ]);
+
+    if ((organism == "Homo_sapiens_(Human)" && notHumanConditions.has(growthCondition)) ||
+        (growthCondition.startsWith("Cultured") && notCulturable.has(organism)) ||
+        (growthCondition == "Caged" && notCageable.has(organism)))
+    {
         errors.push("not applicable for " + organism);
     }
     return errors;
