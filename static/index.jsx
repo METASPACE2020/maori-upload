@@ -4,7 +4,7 @@ import { render } from 'react-dom'
 import Form from 'react-jsonschema-form'
 import $ from 'jquery'
 import customValidation from './validation'
-import init_uploader from './upload'
+import S3FineUploader from './upload'
 
 /*
    Default form validation figures out that custom values for enums
@@ -101,8 +101,6 @@ const MetadataForm = (props) => (
   <Form {...props} />
 );
 
-const upload_validate = init_uploader();
-
 const onMetadataFormSubmit = ({formData}) => {
   /*const data_form = document.getElementById('upload-form');
   if (data_form.elements["imzml_file"].value &&
@@ -123,6 +121,7 @@ const onMetadataFormSubmit = ({formData}) => {
 const App = (props) => (
   <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
     {/*<DatasetUploadForm />*/}
+    <S3FineUploader />
     <MetadataForm onSubmit={onMetadataFormSubmit} {...props} />
   </div>
 );
