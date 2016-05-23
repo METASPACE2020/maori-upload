@@ -179,7 +179,9 @@ function getValidationSchema(schema) {
             return Object.assign({}, schema, {"properties": result});
         case 'string':
             if ('enum' in schema) {
-                let result = Object.assign({}, schema, {'minLength': 1});
+                let result = Object.assign({}, schema);
+                if (schema['required'])
+                    result['minLength'] = 1;
                 delete result['enum']
                 return result;
             }
