@@ -4,6 +4,7 @@ import { render } from 'react-dom'
 import Form from 'react-jsonschema-form'
 import $ from 'jquery'
 import customValidation from './validation'
+import S3FineUploader from './upload'
 
 const LOCAL_STORAGE_KEY = "latestMetadataSubmission";
 
@@ -77,69 +78,41 @@ render() {
   );
 }}
 
-const DatasetUploadForm = () => (
-  <div>
-    <form id="upload-form"
-          action="/submit"
-          method="post"
-          encType="multipart/form-data">
-      <fieldset>
-        <legend>Dataset submission</legend>
-
-        <div className="form-group field">
-          <label class="control-label" for="imzml_file">imzML file</label>
-          <input type="file" name="imzml_file"/>
-
-          <label class="control-label" for="ibd_file">ibd file</label>
-          <input type="file" name="ibd_file"/>
-        </div>
-      </fieldset>
-    </form>
-  </div>
-);
-
 const MetadataForm = (props) => (
   <Form {...props} />
 );
 
-const onMetadataFormSubmit = ({formData}) => {
-  const data_form = document.getElementById('upload-form');
-  const imzml_path = data_form.elements["imzml_file"].value;
-  const ibd_path = data_form.elements["ibd_file"].value;
-  if (!(imzml_path && ibd_path)) {
-      alert("Please select the files to upload");
-      return;
-  }
-  if (!imzml_path.toLowerCase().endsWith(".imzml") ||
-      !ibd_path.toLowerCase().endsWith(".ibd")) {
-      alert("Files have incorrect extensions: '.ibd' and '.imzml' required");
-      return;
-  }
-  const imzml_fn = getFilename(data_form.elements["imzml_file"].value);
-  const ibd_fn = getFilename(data_form.elements["ibd_file"].value);
-  if (imzml_fn !== ibd_fn) {
-      alert("File names do not match");
-      return;
-  }
-  // everything ok, do it
-  const serializedFormData = JSON.stringify(formData);
-  let xmlhttp = new XMLHttpRequest();
-  xmlhttp.open("POST", "/submit");
-  xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  xmlhttp.send(serializedFormData);
-  console.log(xmlhttp.response);
-  data_form.submit();
-  if (typeof Storage !== "undefined") {
-      localStorage.setItem(LOCAL_STORAGE_KEY, serializedFormData);
-  } else {/* not supported by browser */}
-};
+class App extends React.Component {
 
-const App = (props) => (
-  <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
-    <DatasetUploadForm />
-    <MetadataForm onSubmit={onMetadataFormSubmit} {...props} />
-  </div>
-);
+    onMetadataFormSubmit({formData}) {
+      if (this._uploader.uploadValidate())
+      {
+        let xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("POST", "/submit");
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify(formData));
+        console.log(xmlhttp.response);
+        if (typeof Storage !== "undefined") {
+          const serializedFormData = JSON.stringify(formData);
+          localStorage.setItem(LOCAL_STORAGE_KEY, serializedFormData);
+        } else {/* not supported by browser */}
+      } else {
+        alert("Please select the files to upload");
+      }
+    }
+
+    render() {
+        return (
+            <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
+                <S3FineUploader ref={x => this._uploader = x}/>
+                {/* <MetadataForm onSubmit={this.onMetadataFormSubmit.bind(this)}
+                               {...this.props}
+                 />*/}
+                <MetadataForm onSubmit={this.onMetadataFormSubmit.bind(this)} {...this.props}/>
+            </div>
+        )
+    }
+}
 
 /**
  * Extract filename from file path (without extension)
@@ -192,7 +165,6 @@ function getValidationSchema(schema) {
 }
 
 domready(() => {
-
     let schema = require("./schema.json");
     let uiSchema = getUISchema(schema); // modifies enums with 'Other => ...'
     let validationSchema = getValidationSchema(schema);

@@ -16,6 +16,14 @@ module.exports = {
                 loader: 'babel?cacheDirectory'
             },
             {
+                test: /.css?$/,
+                loader: 'style-loader!css-loader'
+            },
+            {
+                test: /\.(jpe?g|png|gif|svg)$/,
+                loader: "file"
+            },
+            {
                 test: /.json$/,
                 loader: 'json'
             }
