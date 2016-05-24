@@ -6,6 +6,8 @@ import $ from 'jquery'
 import customValidation from './validation'
 import S3FineUploader from './upload'
 
+const LOCAL_STORAGE_KEY = "latestMetadataSubmission";
+
 /*
    Default form validation figures out that custom values for enums
    are not valid according to the JSON schema.
@@ -90,7 +92,10 @@ class App extends React.Component {
         xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         xmlhttp.send(JSON.stringify(formData));
         console.log(xmlhttp.response);
-        /* data_form.submit();*/
+        if (typeof Storage !== "undefined") {
+          const serializedFormData = JSON.stringify(formData);
+          localStorage.setItem(LOCAL_STORAGE_KEY, serializedFormData);
+        } else {/* not supported by browser */}
       } else {
         alert("Please select the files to upload");
       }
@@ -107,6 +112,14 @@ class App extends React.Component {
             </div>
         )
     }
+}
+
+/**
+ * Extract filename from file path (without extension)
+ */
+function getFilename(path) {
+    const fn = path.replace(/^.*[\\\/]/, '');
+    return fn.substr(0, fn.lastIndexOf('.'));
 }
 
 function getUISchema(schema) {
@@ -139,7 +152,9 @@ function getValidationSchema(schema) {
             return Object.assign({}, schema, {"properties": result});
         case 'string':
             if ('enum' in schema) {
-                let result = Object.assign({}, schema, {'minLength': 1});
+                let result = Object.assign({}, schema);
+                if (schema['required'])
+                    result['minLength'] = 1;
                 delete result['enum']
                 return result;
             }
@@ -155,11 +170,18 @@ domready(() => {
     let validationSchema = getValidationSchema(schema);
     console.log(validationSchema)
 
-    render(<App schema={schema}
-                uiSchema={uiSchema}
-                validate={customValidation}
-                validationSchema={validationSchema}/>,
-           document.getElementById("app-container"));
+    if (typeof Storage !== "undefined") {
+        const previousSubmission = localStorage.getItem(LOCAL_STORAGE_KEY);
+        console.log(previousSubmission);
+        const parsedFormData = JSON.parse(previousSubmission);
+        console.log(parsedFormData);
+        render(<App schema={schema}
+                    formData={parsedFormData}  // can handle null
+                    uiSchema={uiSchema}
+                    validate={customValidation}
+                    validationSchema={validationSchema}/>,
+               document.getElementById("app-container"));
+    } else {/* not supported by browser */}
 
     $('legend').click( function() {
         $(this).siblings().toggle();
