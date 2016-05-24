@@ -30,7 +30,6 @@ class S3FineUploader extends React.Component {
 
     componentDidMount() {
         this._uploader = new qq.s3.FineUploader({
-//            element: document.getElementById('fine-uploader-s3'),
             element: this.refs.s3fu,
             template: 'qq-template-manual-trigger',
             request: {
@@ -83,7 +82,6 @@ class S3FineUploader extends React.Component {
 
     render() {
         return <div ref='s3fu'>Upload!</div>
-        // return <div ref={x => this._uploader = x}>Upload!</div>
     }
 }
 

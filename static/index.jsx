@@ -76,40 +76,13 @@ render() {
   );
 }}
 
-/*const DatasetUploadForm = () => (
-  <div>
-    <form id="upload-form"
-          action="/submit"
-          method="post"
-          encType="multipart/form-data">
-      <fieldset>
-        <legend>Dataset submission</legend>
-
-        <div className="form-group field">
-          <label class="control-label" for="imzml_file">imzML file</label>
-          <input type="file" name="imzml_file"/>
-
-          <label class="control-label" for="ibd_file">ibd file</label>
-          <input type="file" name="ibd_file"/>
-        </div>
-      </fieldset>
-    </form>
-  </div>
-);*/
-
 const MetadataForm = (props) => (
   <Form {...props} />
 );
 
 class App extends React.Component {
-    /* onMetadataFormSubmit({formData}) {
-         console.log(this._uploader)
-     };*/
 
     onMetadataFormSubmit({formData}) {
-      /*const data_form = document.getElementById('upload-form');
-      if (data_form.elements["imzml_file"].value &&
-          data_form.elements["ibd_file"].value)*/
       if (this._uploader.uploadValidate())
       {
         let xmlhttp = new XMLHttpRequest();
