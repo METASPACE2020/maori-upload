@@ -15,7 +15,7 @@ TMP_STORAGE_PATH = "/tmp"
 METADATA_FILE_NAME = "meta.json"
 BUCKET = 'sm-engine-upload'
 
-s3transfer = S3Transfer(boto3.client('s3', os.getenv('AWS_REGION')))
+s3 = boto3.resource('s3', os.getenv('AWS_REGION'))
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -44,6 +44,17 @@ def prepare_directory(session_id):
 
 class SubmitHandler(tornado.web.RequestHandler):
 
+    def upload_metadata_s3(self, local, dest):
+        obj = s3.Object(BUCKET, join(dest, METADATA_FILE_NAME))
+        obj.upload_file(local)
+
+    def move_s3_files(self, source, dest):
+        for obj in s3.Bucket(BUCKET).objects.filter(Prefix=source):
+            fn = obj.key.split('/')[-1]
+            if fn:
+                s3.Object(BUCKET, join(dest, fn)).copy_from(CopySource=join(BUCKET, obj.key))
+                obj.delete()
+
     def post(self):
         if self.request.headers["Content-Type"].startswith("application/json"):
             data = self.request.body
@@ -52,13 +63,12 @@ class SubmitHandler(tornado.web.RequestHandler):
             with new_json_file(session_id) as fp:
                 fp.write(data)
 
+            meta_json = json.loads(data)
+            user_email = meta_json['Submitted_By']['Submitter']['Email']
+            dest = join(user_email, session_id)
             local = join(get_dataset_path(session_id), METADATA_FILE_NAME)
-            # meta_json = json.loads(data)
-            # user_email = meta_json['Submitted_By']['Submitter']['Email']
-            # ds_name = meta_json['']
-            # s3key = join(user_email, ds_name, session_id, METADATA_FILE_NAME)
-            s3key = join(session_id, METADATA_FILE_NAME)
-            s3transfer.upload_file(filename=local, bucket=BUCKET, key=s3key)
+            self.upload_metadata_s3(local, dest)
+            self.move_s3_files(session_id, )
 
             self.set_header("Content-Type", "text/plain")
             self.write("Uploaded to S3: {}".format(data))
