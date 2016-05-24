@@ -101,30 +101,40 @@ const MetadataForm = (props) => (
   <Form {...props} />
 );
 
-const onMetadataFormSubmit = ({formData}) => {
-  /*const data_form = document.getElementById('upload-form');
-  if (data_form.elements["imzml_file"].value &&
-      data_form.elements["ibd_file"].value)*/
-  if (upload_validate())
-  {
-    let xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", "/submit");
-    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xmlhttp.send(JSON.stringify(formData));
-    console.log(xmlhttp.response);
-    data_form.submit();
-  } else {
-    alert("Please select the files to upload");
-  }
-};
+class App extends React.Component {
+    /* onMetadataFormSubmit({formData}) {
+         console.log(this._uploader)
+     };*/
 
-const App = (props) => (
-  <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
-    {/*<DatasetUploadForm />*/}
-    <S3FineUploader />
-    <MetadataForm onSubmit={onMetadataFormSubmit} {...props} />
-  </div>
-);
+    onMetadataFormSubmit({formData}) {
+      /*const data_form = document.getElementById('upload-form');
+      if (data_form.elements["imzml_file"].value &&
+          data_form.elements["ibd_file"].value)*/
+      if (this._uploader.uploadValidate())
+      {
+        let xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("POST", "/submit");
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify(formData));
+        console.log(xmlhttp.response);
+        /* data_form.submit();*/
+      } else {
+        alert("Please select the files to upload");
+      }
+    }
+
+    render() {
+        return (
+            <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
+                <S3FineUploader ref={x => this._uploader = x}/>
+                {/* <MetadataForm onSubmit={this.onMetadataFormSubmit.bind(this)}
+                               {...this.props}
+                 />*/}
+                <MetadataForm onSubmit={this.onMetadataFormSubmit.bind(this)} {...this.props}/>
+            </div>
+        )
+    }
+}
 
 function getUISchema(schema) {
     switch (schema.type) {
