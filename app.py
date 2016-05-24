@@ -68,7 +68,7 @@ class SubmitHandler(tornado.web.RequestHandler):
             dest = join(user_email, session_id)
             local = join(get_dataset_path(session_id), METADATA_FILE_NAME)
             self.upload_metadata_s3(local, dest)
-            self.move_s3_files(session_id, )
+            self.move_s3_files(session_id, dest)
 
             self.set_header("Content-Type", "text/plain")
             self.write("Uploaded to S3: {}".format(data))
