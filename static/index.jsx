@@ -96,6 +96,8 @@ class App extends React.Component {
           const serializedFormData = JSON.stringify(formData);
           localStorage.setItem(LOCAL_STORAGE_KEY, serializedFormData);
         } else {/* not supported by browser */}
+
+        alert("Success! For uploading another dataset please reload the page");
       } else {
         alert("Please select the files to upload");
       }
