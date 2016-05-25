@@ -23,6 +23,16 @@ Form.prototype.validate = function(formData, schema) {
 };
 
 class SelectOrFreeTextWidget extends React.Component {
+
+hasCustomValue() {
+    // if onChange event has been fired, state must reflect it
+    // otherwise the value must have been set from localStorage
+    if (this.state)
+        return this.state['hasCustomValue'];
+    else
+        return !(this.props.value in this.props.options);
+}
+
 render() {
   /*
      <select> element is responsible for checking if the value is 'Other';
@@ -37,7 +47,7 @@ render() {
 
   const customValueIdentifier = 'Other...'
 
-  if (this.state && this.state['hasCustomValue']) {
+  if (this.hasCustomValue()) {
     customValueInput = (
       <input className="form-control"
            value={value}
@@ -71,7 +81,9 @@ render() {
           return <option key={i} value={value}>{label}</option>;
         })
       }
-      <option key={-1} value={customValueIdentifier}>{customValueIdentifier}</option>
+      <option key={-1} value={customValueIdentifier}>
+          {customValueIdentifier}
+      </option>
       </select>
       {customValueInput}
     </div>
@@ -98,8 +110,6 @@ class App extends React.Component {
         } else {/* not supported by browser */}
 
         alert("Success! For uploading another dataset please reload the page");
-      } else {
-        alert("Please select the files to upload");
       }
     }
 
@@ -107,10 +117,8 @@ class App extends React.Component {
         return (
             <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
                 <S3FineUploader ref={x => this._uploader = x}/>
-                {/* <MetadataForm onSubmit={this.onMetadataFormSubmit.bind(this)}
-                               {...this.props}
-                 />*/}
-                <MetadataForm onSubmit={this.onMetadataFormSubmit.bind(this)} {...this.props}/>
+                <MetadataForm onSubmit={this.onMetadataFormSubmit.bind(this)}
+                              {...this.props}/>
             </div>
         )
     }
