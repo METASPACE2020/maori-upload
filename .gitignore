@@ -116,3 +116,9 @@ node_modules/
 *.csv
 *.gif
 static/bundle.js*
+
+deployment/vars.yml
+deployment/key*
+deployment/*.retry
+
+.vagrant

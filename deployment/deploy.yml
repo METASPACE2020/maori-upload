@@ -1,0 +1,44 @@
+---
+
+- hosts: maori-vbox
+  vars_files:
+    - vars.yml
+  gather_facts: false
+
+  tasks:
+    - name: Pull sources from the repository.
+      git: repo={{ project_repo }} dest={{ project_path }} version={{ branch }}
+
+    - name: Install all needed js libs
+      shell: npm install
+      args:
+        chdir: "{{ project_path }}"
+
+    - name: Compile static resources
+      shell: npm run build
+      args:
+        chdir: "{{ project_path }}"
+
+    - name: Check if supervisord daemon is running
+      shell: supervisorctl status
+      args:
+        executable: /bin/bash
+      register: supervisorctl_status_out
+
+    - debug: var=supervisorctl_status_out
+
+    - name: Start supervisord daemon
+      shell: supervisord -c /etc/supervisor/supervisord.conf -l {{ project_path}}/supervisord.log
+      args:
+        executable: /bin/bash
+      when: "'no such file' in supervisorctl_status_out.stdout"
+
+    - name: Restart the tornado web app running under supervisor
+      shell: supervisorctl restart all
+      args:
+        executable: /bin/bash
+      when: "'maori-upload' in supervisorctl_status_out.stdout"
+      register: command_result
+      failed_when: not ("'started' in command_result.stdout")
+
+    - debug: var=command_result

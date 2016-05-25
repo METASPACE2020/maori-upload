@@ -1,0 +1,62 @@
+---
+
+- hosts: maori-vbox
+  vars_files:
+    - vars.yml
+  gather_facts: false
+
+  tasks:
+    - name: Create the project root directory
+      become: yes
+      file: state=directory path={{ project_root }} owner={{ user }} group={{ user }} mode=755
+
+    - name: Create user
+      become: yes
+      user: name={{ user }} state=present
+
+    - name: Create the project directory
+      file: state=directory path={{ project_root }}/{{ project_name }} mode=755
+
+    - name: Install required system packages
+      become: yes
+      apt: pkg={{ item }} state=installed update-cache=yes
+      with_items: "{{ system_packages }}"
+
+    - name: Install required Python packages
+      become: yes
+      pip: name={{ item }} state=latest
+      with_items: "{{ python_packages }}"
+
+#    - name: Install nodejs and npm
+#      get_url: url={{ nodejs_url }} dest=/opt/dev/{{ nodejs_file }}
+
+    - name: Download and install nodejs and npm
+      unarchive: src={{ nodejs_url }} dest=/opt/dev copy=no creates=/opt/dev/{{ nodejs_version }}
+
+    - name: Create node and npm symlinks
+      become: yes
+      file: src=/opt/dev/{{ nodejs_version }}/bin/{{ item }}
+            dest=/usr/bin/{{ item }}
+            owner={{ user }}
+            group={{ user }}
+            state=link
+      with_items:
+        - node
+        - npm
+
+    - name: Create config directory for supervisor
+      become: yes
+      file: path=/etc/supervisor state=directory mode=0700 owner={{ user }} group={{ user }}
+
+    - name: Copy supervisor config file
+      copy: src=supervisord.conf dest=/etc/supervisor/supervisord.conf mode=0600 owner={{ user }} group={{ user }}
+
+    - name: Copy maori-upload supervisor config file
+      template: src=maori-upload.supervisor.j2 dest=/etc/supervisor/maori-upload.supervisor mode=0600 owner={{ user }} group={{ user }}
+
+#    - name: Start supervisord daemon
+#      shell: supervisord -c /etc/supervisor/supervisord.conf -l {{ project_path}}/supervisord.log
+
+#    - name: Mount code folder
+#      mount: fstype=vboxsf opts=uid={{ project_name }},gid={{ project_name }} name={{ project_root }}/code/ src={{ project_name }} state=mounted
+#      only_if: "$vm == 1"

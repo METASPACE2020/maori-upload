@@ -1,0 +1,11 @@
+# -*- conf -*-
+
+[program:maori-upload]
+process_name = maori-upload-%(process_num)s
+environment = AWS_ACCESS_KEY_ID="{{ aws_access_key_id }}",AWS_SECRET_ACCESS_KEY="{{ aws_secret_access_key }}",AWS_REGION="{{ aws_region }}"
+command = python {{ project_path }}/app.py
+redirect_stderr=true
+stdout_logfile={{ project_path }}/maori-upload.log
+# Increase numprocs to run multiple processes on different ports.
+numprocs = 1
+numprocs_start = 8000
