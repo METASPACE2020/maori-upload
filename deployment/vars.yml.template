@@ -1,0 +1,22 @@
+---
+
+aws_access_key_id:
+aws_secret_access_key:
+aws_region:
+user: ubuntu
+project_name: maori-upload
+project_root: /opt/dev
+project_path: "{{  project_root }}/{{ project_name }}"
+project_repo: https://github.com/alexandrovteam/maori-upload.git
+branch: master
+system_packages:
+  - git
+  - htop
+  - python-pip
+python_packages:
+  - pip
+  - tornado
+  - boto3
+  - supervisor
+nodejs_version: node-v4.4.5-linux-x64
+nodejs_url: https://nodejs.org/dist/v4.4.5/{{ nodejs_version }}.tar.xz

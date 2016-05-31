@@ -1,0 +1,37 @@
+---
+
+- hosts: localhost
+  connection: local
+  vars_files:
+    - vars.yml
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Check if keys have been already generated (locally)
+      local_action: stat path=key
+      become: no
+      register: key_file_st
+
+    - name: Generate a key pair for remote ubuntu user (locally)
+      become: no
+      local_action: shell ssh-keygen -f key -t rsa -N ''
+      when: key_file_st.stat.exists == False
+
+
+- hosts: default
+  vars_files:
+    - vars.yml
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Create the SSH directory
+      file: state=directory path=/home/{{ user }}/.ssh/
+
+    - name: Add local key to authorized_keys template
+      authorized_key: user={{ user }}
+                      key="{{ lookup('file', 'key.pub') }}"
+
+#    - name: Upload SSH key
+#      copy: src=key dest=/home/{{ user }}/.ssh/id_rsa mode=0600

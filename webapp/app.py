@@ -78,14 +78,14 @@ class SubmitHandler(tornado.web.RequestHandler):
 
 
 class UploadHandler(tornado.web.RequestHandler):
-    AWS_CLIENT_SECRET_KEY = os.getenv('AWS_CLIENT_SECRET_KEY')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
     def sign_policy(self, policy):
         """ Sign and return the policy document for a simple upload.
         http://aws.amazon.com/articles/1434/#signyours3postform """
         signed_policy = base64.b64encode(policy)
         signature = base64.b64encode(hmac.new(
-            self.AWS_CLIENT_SECRET_KEY, signed_policy, hashlib.sha1).
+            self.AWS_SECRET_ACCESS_KEY, signed_policy, hashlib.sha1).
             digest())
         return {'policy': signed_policy, 'signature': signature}
 
@@ -93,7 +93,7 @@ class UploadHandler(tornado.web.RequestHandler):
         """ Sign and return the headers for a chunked upload. """
         return {
             'signature': base64.b64encode(hmac.new(
-                self.AWS_CLIENT_SECRET_KEY, headers, hashlib.sha1).
+                self.AWS_SECRET_ACCESS_KEY, headers, hashlib.sha1).
                 digest())
         }
 
