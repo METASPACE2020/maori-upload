@@ -1,6 +1,6 @@
 ---
 
-- hosts: maori-vbox
+- hosts: maori-upload
   vars_files:
     - vars.yml
   gather_facts: false
@@ -39,6 +39,6 @@
         executable: /bin/bash
       when: "'maori-upload' in supervisorctl_status_out.stdout"
       register: command_result
-      failed_when: not ("'started' in command_result.stdout")
+      failed_when: "'ERROR' in command_result.stdout"
 
     - debug: var=command_result
