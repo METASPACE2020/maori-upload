@@ -6,18 +6,18 @@
   gather_facts: false
 
   tasks:
-    - name: Pull sources from the repository.
+    - name: Pull sources from the repository
       git: repo={{ project_repo }} dest={{ project_path }} version={{ branch }}
 
     - name: Install all needed js libs
       shell: npm install
       args:
-        chdir: "{{ project_path }}"
+        chdir: "{{ project_path }}/webapp"
 
     - name: Compile static resources
       shell: npm run build
       args:
-        chdir: "{{ project_path }}"
+        chdir: "{{ project_path }}/webapp"
 
     - name: Check if supervisord daemon is running
       shell: supervisorctl status

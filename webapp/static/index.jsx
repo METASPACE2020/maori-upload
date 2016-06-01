@@ -98,7 +98,7 @@ const MetadataForm = (props) => (
 class App extends React.Component {
 
     constructor (props) {
-        super(props)
+        super(props);
         this.state = {
             showMetadataForm: false
         }

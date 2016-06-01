@@ -7,12 +7,12 @@ import Cookies from 'js-cookie'
 
 class S3FineUploader extends React.Component {
     constructor (props) {
-        super(props)
+        super(props);
         this._uploader = null;
     }
 
     uploadValidate() {
-        var fnames = this._uploader.getUploads().map((x) => x.name)
+        var fnames = this._uploader.getUploads().map((x) => x.name);
 
         if (fnames.length < 2) {
             alert(qq.format("Please choose 2 files for upload"));
@@ -60,7 +60,7 @@ class S3FineUploader extends React.Component {
             },
             validation: {
                 itemLimit: 2,
-                allowedExtensions: ["imzML", "ibd"],
+                allowedExtensions: ["imzML", "ibd"]
             },
             callbacks: {
                 onComplete: function(id, name, response) {
@@ -69,7 +69,7 @@ class S3FineUploader extends React.Component {
                     }
                     else
                       console.log('Failed: ' + name);
-                },
+                }
             }
         });
 
