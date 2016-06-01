@@ -4,7 +4,7 @@ import { render } from 'react-dom'
 import Form from 'react-jsonschema-form'
 import $ from 'jquery'
 import customValidation from './validation'
-import S3FineUploader from './upload'
+import S3FineUploader from './upload.jsx'
 
 const LOCAL_STORAGE_KEY = "latestMetadataSubmission";
 
@@ -30,7 +30,7 @@ class SelectOrFreeTextWidget extends React.Component {
         if (this.state)
             return this.state['hasCustomValue'];
         else
-            return !(this.props.value in this.props.options);
+            return this.props.options.map(opt => opt.value).indexOf(this.props.value) < 0;
     }
 
     render() {
