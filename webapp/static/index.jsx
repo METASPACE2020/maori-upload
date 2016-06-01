@@ -121,8 +121,9 @@ class App extends React.Component {
               localStorage.setItem(LOCAL_STORAGE_KEY, serializedFormData);
             } else {/* not supported by browser */}
 
-            alert("Success! Thank you for contributing to humanity wellness!");
-            location.reload(true);
+            alert("Success! Thank you for contributing to humanity wellness! Please don't reload the page until the uploading is finished");
+
+            this.setShowMetadataForm(false);
         }
     }
 
