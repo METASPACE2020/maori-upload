@@ -27,9 +27,6 @@
       pip: name={{ item }} state=latest
       with_items: "{{ python_packages }}"
 
-#    - name: Install nodejs and npm
-#      get_url: url={{ nodejs_url }} dest=/opt/dev/{{ nodejs_file }}
-
     - name: Download and install nodejs and npm
       unarchive: src={{ nodejs_url }} dest=/opt/dev copy=no creates=/opt/dev/{{ nodejs_version }}
 
@@ -53,6 +50,22 @@
 
     - name: Copy maori-upload supervisor config file
       template: src=maori-upload.supervisor.j2 dest=/etc/supervisor/maori-upload.supervisor mode=0600 owner={{ user }} group={{ user }}
+
+    - name: Enable ip traffic forwarding
+      become: yes
+      sysctl: name="net.ipv4.conf.eth0.forwarding" value=1 sysctl_set=yes
+
+    - name: Forward traffic from 80 to 9777 port
+      become: yes
+      iptables: table=nat chain=PREROUTING in_interface=eth0 protocol=tcp match=tcp destination_port=80 jump=REDIRECT to_ports=9777 comment="Redirect web traffic to port 9777"
+
+    - name: Persist iptables rules
+      become: yes
+      command: sh -c "iptables-save > /etc/iptables.rules"
+
+    - name: Put iptablesload script to /etc/network/if-pre-up.d
+      become: yes
+      copy: src=iptablesload dest=/etc/network/if-pre-up.d/iptablesload mode=0755
 
 #    - name: Start supervisord daemon
 #      shell: supervisord -c /etc/supervisor/supervisord.conf -l {{ project_path}}/supervisord.log
