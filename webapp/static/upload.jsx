@@ -8,7 +8,6 @@ import Cookies from 'js-cookie'
 class S3FineUploader extends React.Component {
     constructor (props) {
         super(props)
-
         this._uploader = null;
     }
 
@@ -75,8 +74,10 @@ class S3FineUploader extends React.Component {
         });
 
         $('#trigger-upload').click(() => {
-            if (this.uploadValidate())
+            if (this.uploadValidate()) {
                 this._uploader.uploadStoredFiles();
+                this.props.setShowMetadataForm(true);
+            }
         });
     }
 

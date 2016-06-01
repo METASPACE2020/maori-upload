@@ -65,7 +65,10 @@ class SubmitHandler(tornado.web.RequestHandler):
 
             meta_json = json.loads(data)
             user_email = meta_json['Submitted_By']['Submitter']['Email']
-            dest = join(user_email, session_id)
+            organism = meta_json['Sample_Information']['Organism']
+            org_part = meta_json['Sample_Information']['Organism_Part']
+            org_condition = meta_json['Sample_Information']['Condition']
+            dest = join(user_email, organism, org_part, org_condition, session_id)
             local = join(get_dataset_path(session_id), METADATA_FILE_NAME)
             self.upload_metadata_s3(local, dest)
             self.move_s3_files(session_id, dest)
