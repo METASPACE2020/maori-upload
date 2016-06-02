@@ -6,12 +6,12 @@ import hmac
 import hashlib
 import json
 import boto3
-from requests import post
 
 import tornado.ioloop
 import tornado.web
 
-SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/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'
+from notify import post_to_slack
+
 TMP_STORAGE_PATH = "/tmp"
 METADATA_FILE_NAME = "meta.json"
 BUCKET = 'sm-engine-upload'
@@ -97,12 +97,7 @@ class MoveHandler(tornado.web.RequestHandler):
         dest = join(user_email, organism, org_part, org_condition, session_id)
         self.move_s3_files(source=session_id, dest=dest)
 
-        msg = {"channel": "#maori-upload-notify",
-               "username": "webhookbot",
-               "text": "New successfully uploaded data set\nEmail: {}\nS3 path: {}"
-                   .format(user_email, join(BUCKET, dest)),
-               "icon_emoji": ":new:"}
-        post(SLACK_WEBHOOK_URL, json=msg)
+        post_to_slack(user_email, join(BUCKET, dest))
 
         self.set_header("Content-Type", "text/plain")
         self.write("Uploaded to S3. Path: {}".format(dest))
