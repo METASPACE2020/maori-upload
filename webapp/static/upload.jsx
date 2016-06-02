@@ -28,6 +28,8 @@ class S3FineUploader extends React.Component {
     }
 
     componentDidMount() {
+        const fineUploaderComponent = this;
+
         this._uploader = new qq.s3.FineUploader({
             element: this.refs.s3fu,
             template: 'qq-template-manual-trigger',
@@ -69,6 +71,14 @@ class S3FineUploader extends React.Component {
                     }
                     else
                       console.log('Failed: ' + name);
+                },
+                onAllComplete: function (succeeded, failed) {
+                    if (failed.length == 0) {
+                        fineUploaderComponent.props.setFilesUploaded(true);
+                    }
+                    else {
+                        console.log('Failed file IDs: ', failed);
+                    }
                 }
             }
         });

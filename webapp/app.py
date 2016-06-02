@@ -17,6 +17,7 @@ METADATA_FILE_NAME = "meta.json"
 BUCKET = 'sm-engine-upload'
 
 s3 = boto3.resource('s3', os.getenv('AWS_REGION'))
+data_store = dict()
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -28,8 +29,6 @@ class MainHandler(tornado.web.RequestHandler):
 def new_json_file(session_id):
     dir_path = get_dataset_path(session_id)
     file_path = join(dir_path, METADATA_FILE_NAME)
-    if exists(file_path):
-        raise RuntimeError("JSON already exists: {}".format(file_path))
     return open(file_path, 'wb')
 
 
@@ -45,16 +44,12 @@ def prepare_directory(session_id):
 
 class SubmitHandler(tornado.web.RequestHandler):
 
-    def upload_metadata_s3(self, local, dest):
-        obj = s3.Object(BUCKET, join(dest, METADATA_FILE_NAME))
-        obj.upload_file(local)
+    def initialize(self, data):
+        self.data = data
 
-    def move_s3_files(self, source, dest):
-        for obj in s3.Bucket(BUCKET).objects.filter(Prefix=source):
-            fn = obj.key.split('/')[-1]
-            if fn:
-                s3.Object(BUCKET, join(dest, fn)).copy_from(CopySource=join(BUCKET, obj.key))
-                obj.delete()
+    def upload_metadata_s3(self, local, dest):
+        obj = s3.Object(BUCKET, dest)
+        obj.upload_file(local)
 
     def post(self):
         if self.request.headers["Content-Type"].startswith("application/json"):
@@ -65,28 +60,52 @@ class SubmitHandler(tornado.web.RequestHandler):
                 fp.write(data)
 
             meta_json = json.loads(data)
-            user_email = meta_json['Submitted_By']['Submitter']['Email']
-            organism = meta_json['Sample_Information']['Organism']
-            org_part = meta_json['Sample_Information']['Organism_Part']
-            org_condition = meta_json['Sample_Information']['Condition']
+            self.data['meta_json'] = meta_json
 
-            dest = join(user_email, organism, org_part, org_condition, session_id)
+            dest = join(session_id, METADATA_FILE_NAME)
             local = join(get_dataset_path(session_id), METADATA_FILE_NAME)
             self.upload_metadata_s3(local, dest)
-            self.move_s3_files(session_id, dest)
-
-            msg = {"channel": "#maori-upload-notify",
-                   "username": "webhookbot",
-                   "text": "New successfully uploaded data set.\nEmail: {}.\nS3 path: {}"
-                       .format(user_email, join(BUCKET, dest)),
-                   "icon_emoji": ":new:"}
-            post(SLACK_WEBHOOK_URL, json=msg)
 
             self.set_header("Content-Type", "text/plain")
             self.write("Uploaded to S3: {}".format(data))
         else:
             print(self.request.headers["Content-Type"])
             self.write("Error: Content-Type has to be 'application/json'")
+
+
+class MoveHandler(tornado.web.RequestHandler):
+
+    def initialize(self, data):
+        self.data = data
+
+    def move_s3_files(self, source, dest):
+        for obj in s3.Bucket(BUCKET).objects.filter(Prefix=source):
+            fn = obj.key.split('/')[-1]
+            if fn:
+                s3.Object(BUCKET, join(dest, fn)).copy_from(CopySource=join(BUCKET, obj.key))
+                obj.delete()
+
+    def post(self):
+        session_id = self.get_cookie('session_id')
+
+        meta_json = self.data['meta_json']
+        user_email = meta_json['Submitted_By']['Submitter']['Email']
+        organism = meta_json['Sample_Information']['Organism']
+        org_part = meta_json['Sample_Information']['Organism_Part']
+        org_condition = meta_json['Sample_Information']['Condition']
+
+        dest = join(user_email, organism, org_part, org_condition, session_id)
+        self.move_s3_files(source=session_id, dest=dest)
+
+        msg = {"channel": "#maori-upload-notify",
+               "username": "webhookbot",
+               "text": "New successfully uploaded data set\nEmail: {}\nS3 path: {}"
+                   .format(user_email, join(BUCKET, dest)),
+               "icon_emoji": ":new:"}
+        post(SLACK_WEBHOOK_URL, json=msg)
+
+        self.set_header("Content-Type", "text/plain")
+        self.write("Uploaded to S3. Path: {}".format(dest))
 
 
 class UploadHandler(tornado.web.RequestHandler):
@@ -122,8 +141,9 @@ class UploadHandler(tornado.web.RequestHandler):
 def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
-        (r"/submit", SubmitHandler),
-        (r'/s3/sign', UploadHandler)
+        (r'/s3/sign', UploadHandler),
+        (r"/submit", SubmitHandler, dict(data=data_store)),
+        (r'/move_files', MoveHandler, dict(data=data_store)),
     ],
         static_path=join(dirname(__file__), "static"),
         static_url_prefix='/static/',

@@ -45,7 +45,7 @@ class SelectOrFreeTextWidget extends React.Component {
       let customValueInput;
       let selectValue = value;
 
-      const customValueIdentifier = 'Other...'
+      const customValueIdentifier = 'Other...';
 
       if (this.hasCustomValue()) {
         customValueInput = (
@@ -100,12 +100,31 @@ class App extends React.Component {
     constructor (props) {
         super(props);
         this.state = {
-            showMetadataForm: false
+            showMetadataForm: false,
+            filesUploaded: false,
+            metadataUploaded: false
+        }
+    }
+
+    trySendMoveFilesRequest() {
+        if (this.state.filesUploaded && this.state.metadataUploaded) {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "/move_files");
+            xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xmlhttp.send(JSON.stringify({}));
         }
     }
 
     setShowMetadataForm(showMetadataForm) {
         this.setState({'showMetadataForm': showMetadataForm});
+    }
+
+    setFilesUploaded(uploaded) {
+        this.setState({'filesUploaded': uploaded}, this.trySendMoveFilesRequest);
+    }
+
+    setMetadataUploaded(uploaded) {
+        this.setState({'metadataUploaded': uploaded}, this.trySendMoveFilesRequest);
     }
 
     onMetadataFormSubmit({formData}) {
@@ -125,6 +144,7 @@ class App extends React.Component {
                 "Please don't reload the page until the uploading is finished");
 
             this.setShowMetadataForm(false);
+            this.setMetadataUploaded(true);
         }
     }
 
@@ -136,7 +156,9 @@ class App extends React.Component {
 
         return (
             <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
-                <S3FineUploader ref={x => this._uploader = x} setShowMetadataForm={this.setShowMetadataForm.bind(this)} />
+                <S3FineUploader ref={x => this._uploader = x}
+                                setShowMetadataForm={this.setShowMetadataForm.bind(this)}
+                                setFilesUploaded={this.setFilesUploaded.bind(this)}/>
                 { metadataForm }
             </div>
         )
@@ -197,7 +219,7 @@ domready(() => {
     let schema = require("./schema.json");
     let uiSchema = getUISchema(schema); // modifies enums with 'Other => ...'
     let validationSchema = getValidationSchema(schema);
-    console.log(validationSchema)
+    console.log(validationSchema);
 
     if (typeof Storage !== "undefined") {
         const previousSubmission = localStorage.getItem(LOCAL_STORAGE_KEY);
