@@ -18,5 +18,6 @@ python_packages:
   - tornado
   - boto3
   - supervisor
+  - requests
 nodejs_version: node-v4.4.5-linux-x64
 nodejs_url: https://nodejs.org/dist/v4.4.5/{{ nodejs_version }}.tar.xz
