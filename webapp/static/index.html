@@ -131,12 +131,24 @@
                 min-height: 50px;
                 max-height: 150px;
             }
+
+            #instructions {
+                width: 80%;
+                max-width: 1000px;
+                padding: 50px 50px 0px 50px;
+            }
         </style>
 
         <title>METASPACE Upload Web Application</title>
     </head>
 
     <body>
+        <div id="instructions">
+            Datasets should be prepared in <a href="http://imzml.org">imzML</a> format as <b>centroided</b> spectra.
+            We have prepared instructions for converting datasets into imzML here: <a href="https://goo.gl/5SgG9a">https://goo.gl/5SgG9a</a>.
+            If you're having difficulties please contact your instrument vendor.
+        </div>
+
         <div id="app-container"></div>
         <script src="static/bundle.js"></script>
     </body>
