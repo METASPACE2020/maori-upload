@@ -173,12 +173,12 @@ function getFilename(path) {
     return fn.substr(0, fn.lastIndexOf('.'));
 }
 
-function getUISchema(schema) {
+function getUISchema(schema, propName=null) {
     switch (schema.type) {
         case 'object':
             let result = {};
             for (var prop in schema.properties)
-                result[prop] = getUISchema(schema.properties[prop]);
+                result[prop] = getUISchema(schema.properties[prop], prop);
             return result;
         case 'string':
             if ('enum' in schema) {
@@ -187,6 +187,8 @@ function getUISchema(schema) {
                     schema['enum'] = options.slice(0, options.length - 1);
                     return {"ui:widget": SelectOrFreeTextWidget};
                 }
+            } else if (propName && propName.endsWith("Freetext")) {
+                return {"ui:widget": "textarea"};
             }
             return undefined;
         default:
