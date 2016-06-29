@@ -4,10 +4,10 @@
   "properties": {
     "Sample_Information": {
       "type": "object",
+      "required": ["Organism", "Organism_Part", "Condition"],
       "properties": {
         "Organism": {
           "type": "string",
-          "required": true,
           "enum": [
             "Homo_sapiens_(Human)",
             "Mus_musculus_(Mouse)",
@@ -19,7 +19,6 @@
         },
         "Organism_Part": {
           "type": "string",
-          "required": true,
           "enum": [
             "Whole_Organism",
             "Brain",
@@ -39,7 +38,6 @@
         },
         "Condition": {
           "type": "string",
-          "required": true,
           "enum": [
             "Wildtype",
             "Diseased",
@@ -61,10 +59,11 @@
     },
     "Sample_Preparation": {
       "type": "object",
+      "required": ["Sample_Stabilisation", "Tissue_Modification",
+                   "MALDI_Matrix", "MALDI_Matrix_Application"],
       "properties": {
         "Sample_Stabilisation": {
           "type": "string",
-          "required": true,
           "enum": [
             "Fresh_Frozen",
             "Formalin_Fixed",
@@ -74,7 +73,6 @@
         },
         "Tissue_Modification": {
           "type": "string",
-          "required": true,
           "enum": [
             "none",
             "Derivatisation",
@@ -84,7 +82,6 @@
         },
         "MALDI_Matrix": {
           "type": "string",
-          "required": true,
           "enum": [
             "none",
             "2,5-dihydroxybenzoic_acid_(DHB)",
@@ -98,7 +95,6 @@
         },
         "MALDI_Matrix_Application": {
           "type": "string",
-          "required": true,
           "enum": [
             "none",
             "Spray_Robot",
@@ -113,10 +109,10 @@
     },
     "MS_Analysis": {
       "type": "object",
+      "required": ["Polarity", "Ionisation_Source", "Analyzer"],
       "properties": {
         "Polarity": {
           "type": "string",
-          "required": "true",
           "enum": [
             "Positive",
             "Negative"
@@ -124,7 +120,6 @@
         },
         "Ionisation_Source": {
           "type": "string",
-          "required": true,
           "enum": [
             "MALDI",
             "LDI",
@@ -137,7 +132,6 @@
         },
         "Analyzer": {
           "type": "string",
-          "required": true,
           "enum": [
             "FTICR",
             "Orbitrap",
@@ -150,17 +144,16 @@
         "Detector_Resolving_Power": {
           "type": "object",
           "title": "Detector Resolving Power",
+          "required": ["mz", "Resolving_Power"],
           "properties": {
             "mz": {
               "type": "number",
-              "required": true,
               "minimum": 50,
               "maximum": 5000,
               "default": 200
             },
             "Resolving_Power": {
               "type": "number",
-              "required": true,
               "minimum": 10000,
               "maximum": 1000000
             }
@@ -170,25 +163,23 @@
     },
     "Submitted_By": {
       "type": "object",
+      "required": ["Institution"],
       "properties": {
         "Institution": {
-          "type": "string",
-          "required": true
+          "type": "string"
         },
         "Submitter": {
           "type": "object",
+          "required": ["Surname", "First_Name", "Email"],
           "properties": {
             "Surname": {
-              "type": "string",
-              "required": true
+              "type": "string"
             },
             "First_Name": {
-              "type": "string",
-              "required": true
+              "type": "string"
             },
             "Email": {
-              "type": "string",
-              "required": true
+              "type": "string"
             }
           }
         },
@@ -210,9 +201,9 @@
     },
     "metaspace_options":{
       "type": "object",
+      "required": ["Metabolite_Database"],
       "properties":{
         "Metabolite_Database": {
-            "required" :true,
             "type": "string",
             "enum": [
                 "ChEBI",
@@ -225,7 +216,6 @@
         },
        "Alpha-tester":{
           "type": "boolean",
-          "required": true,
           "default": false,
           "format": "checkbox"
        }

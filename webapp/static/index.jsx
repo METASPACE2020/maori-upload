@@ -196,17 +196,20 @@ function getUISchema(schema, propName=null) {
     }
 }
 
-function getValidationSchema(schema) {
+function getValidationSchema(schema, required=false) {
     switch (schema.type) {
         case 'object':
             let result = {};
-            for (var prop in schema.properties)
-                result[prop] = getValidationSchema(schema.properties[prop]);
+            let requirements = schema['required'] || {};
+            for (var prop in schema.properties) {
+                result[prop] = getValidationSchema(schema.properties[prop],
+                                                   prop in requirements);
+            }
             return Object.assign({}, schema, {"properties": result});
         case 'string':
             if ('enum' in schema) {
                 let result = Object.assign({}, schema);
-                if (schema['required'])
+                if (required)
                     result['minLength'] = 1;
                 delete result['enum']
                 return result;
@@ -217,8 +220,28 @@ function getValidationSchema(schema) {
     }
 }
 
+function getTitle(propName) {
+    return propName.replace(/_/g, ' ')
+                   .replace(/ [A-Z][a-z]/g, (x) => ' ' + x.slice(1).toLowerCase())
+                   .replace(/ freetext$/, '');
+}
+
+function addTitles(schema, propName=null) {
+    let title = schema['title'] || getTitle(propName);
+    switch (schema.type) {
+        case 'object':
+            let result = {};
+            for (var prop in schema.properties) {
+                result[prop] = addTitles(schema.properties[prop], prop);
+            }
+            return Object.assign({}, schema, {"properties": result, "title": title});
+        default:
+            return Object.assign({}, schema, {"title": title});
+    }
+}
+
 domready(() => {
-    let schema = require("./schema.json");
+    let schema = addTitles(require("./schema.json"));
     let uiSchema = getUISchema(schema); // modifies enums with 'Other => ...'
     let validationSchema = getValidationSchema(schema);
     console.log(validationSchema);
