@@ -114,6 +114,14 @@
     "MS_Analysis": {
       "type": "object",
       "properties": {
+        "Polarity": {
+          "type": "string",
+          "required": "true",
+          "enum": [
+            "Positive",
+            "Negative"
+          ]
+        },
         "Ionisation_Source": {
           "type": "string",
           "required": true,
@@ -163,6 +171,10 @@
     "Submitted_By": {
       "type": "object",
       "properties": {
+        "Institution": {
+          "type": "string",
+          "required": true
+        },
         "Submitter": {
           "type": "object",
           "properties": {
