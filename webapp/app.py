@@ -1,6 +1,5 @@
 import os
 from os.path import dirname, exists, isdir, join, splitext
-from uuid import uuid4
 import base64
 import hmac
 import hashlib
@@ -22,7 +21,6 @@ data_store = dict()
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.set_cookie('session_id', str(uuid4()))
         self.render('static/index.html')
 
 
@@ -53,21 +51,21 @@ class SubmitHandler(tornado.web.RequestHandler):
 
     def post(self):
         if self.request.headers["Content-Type"].startswith("application/json"):
-            data = self.request.body
-            session_id = self.get_cookie('session_id')
+            data = json.loads(self.request.body)
+            session_id = data['session_id']
+            metadata = data['formData']
             prepare_directory(session_id)
             with new_json_file(session_id) as fp:
-                fp.write(data)
+                fp.write(json.dumps(metadata))
 
-            meta_json = json.loads(data)
-            self.data['meta_json'] = meta_json
+            self.data['meta_json'] = metadata
 
             dest = join(session_id, METADATA_FILE_NAME)
             local = join(get_dataset_path(session_id), METADATA_FILE_NAME)
             self.upload_metadata_s3(local, dest)
 
             self.set_header("Content-Type", "text/plain")
-            self.write("Uploaded to S3: {}".format(data))
+            self.write("Uploaded to S3: {}".format(data['formData']))
         else:
             print(self.request.headers["Content-Type"])
             self.write("Error: Content-Type has to be 'application/json'")
@@ -86,10 +84,10 @@ class MoveHandler(tornado.web.RequestHandler):
                 obj.delete()
 
     def post(self):
-        session_id = self.get_cookie('session_id')
+        session_id = json.loads(self.request.body)['session_id']
 
         meta_json = self.data['meta_json']
-        user_email = meta_json['Submitted_By']['Submitter']['Email']
+        user_email = meta_json['Submitted_By']['Submitter']['Email'].lower()
         organism = meta_json['Sample_Information']['Organism']
         org_part = meta_json['Sample_Information']['Organism_Part']
         org_condition = meta_json['Sample_Information']['Condition']

@@ -103,7 +103,15 @@ class App extends React.Component {
             showMetadataForm: false,
             filesUploaded: false,
             metadataUploaded: false
-        }
+        };
+        sessionStorage.setItem('session_id', this.uuid4());
+    }
+
+    uuid4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 
     trySendMoveFilesRequest() {
@@ -111,7 +119,10 @@ class App extends React.Component {
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.open("POST", "/move_files");
             xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xmlhttp.send(JSON.stringify({}));
+            var data = {
+                session_id: sessionStorage.getItem('session_id')
+            };
+            xmlhttp.send(JSON.stringify(data));
         }
     }
 
@@ -129,11 +140,16 @@ class App extends React.Component {
 
     onMetadataFormSubmit({formData}) {
         if (this._uploader.uploadValidate())
-        {
+        {   
+            var body = {
+                session_id: sessionStorage.getItem('session_id'),
+                formData: formData
+            };
+            
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.open("POST", "/submit");
             xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xmlhttp.send(JSON.stringify(formData));
+            xmlhttp.send(JSON.stringify(body));
             console.log(xmlhttp.response);
             if (typeof Storage !== "undefined") {
               const serializedFormData = JSON.stringify(formData);
