@@ -3,7 +3,6 @@ import React from 'react'
 import { render } from 'react-dom'
 import Form from 'react-jsonschema-form'
 import $ from 'jquery'
-import customValidation from './validation'
 import S3FineUploader from './upload.jsx'
 
 const LOCAL_STORAGE_KEY = "latestMetadataSubmission";
@@ -270,7 +269,6 @@ domready(() => {
         render(<App schema={schema}
                     formData={parsedFormData}  // can handle null
                     uiSchema={uiSchema}
-                    validate={customValidation}
                     validationSchema={validationSchema}/>,
                document.getElementById("app-container"));
     } else {/* not supported by browser */}
