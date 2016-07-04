@@ -145,6 +145,8 @@ class MoveHandler(tornado.web.RequestHandler):
             params = RESOL_POWER_PARAMS['140K']
         elif rp200 < 265000:
             params = RESOL_POWER_PARAMS['250K']
+        elif rp200 < 390000:
+            params = RESOL_POWER_PARAMS['280K']
         else:
             params = RESOL_POWER_PARAMS['500K']
 
