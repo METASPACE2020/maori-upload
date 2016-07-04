@@ -5,6 +5,7 @@ import hmac
 import hashlib
 import json
 import boto3
+import tempfile
 
 import tornado.ioloop
 import tornado.web
@@ -70,11 +71,45 @@ class SubmitHandler(tornado.web.RequestHandler):
             print(self.request.headers["Content-Type"])
             self.write("Error: Content-Type has to be 'application/json'")
 
+# copy-pasted from SM_distributed/scripts/generate_ds_config.py
+RESOL_POWER_PARAMS = {
+    '70K': {
+        'fwhm': 0.00285714285,
+        'sigma': 0.006728,
+        'pts_per_mz': 1750
+    },
+    '100K': {
+        'fwhm': 0.002,
+        'sigma': 0.0047096,
+        'pts_per_mz': 2500
+    },
+    '140K': {
+        'fwhm': 0.00142857142,
+        'sigma': 0.003364,
+        'pts_per_mz': 3500
+    },
+    '250K': {
+        'fwhm': 0.0008,
+        'sigma': 0.00188384,
+        'pts_per_mz': 6250
+    },
+    '280K': {
+        'fwhm': 0.00071428571,
+        'sigma': 0.001682,
+        'pts_per_mz': 7000
+    },
+    '500K': {
+        'fwhm': 0.0004,
+        'sigma': 0.00094192,
+        'pts_per_mz': 12500
+    }
+}
 
 class MoveHandler(tornado.web.RequestHandler):
 
     def initialize(self, data):
         self.data = data
+        self.imzml_fn = None
 
     def move_s3_files(self, source, dest):
         for obj in s3.Bucket(BUCKET).objects.filter(Prefix=source):
@@ -82,6 +117,63 @@ class MoveHandler(tornado.web.RequestHandler):
             if fn:
                 s3.Object(BUCKET, join(dest, fn)).copy_from(CopySource=join(BUCKET, obj.key))
                 obj.delete()
+
+                if fn.lower().endswith('imzml'):
+                    self.imzml_fn = fn.rsplit('.', 1)[0]
+
+    def create_config(self, meta_json, dest):
+        polarity_dict = {'Positive': '+', 'Negative': '-'}
+        polarity = polarity_dict[meta_json['MS_Analysis']['Polarity']]
+        instrument = meta_json['MS_Analysis']['Analyzer']
+        rp = meta_json['MS_Analysis']['Detector_Resolving_Power']
+        rp_mz = float(rp['mz'])
+        rp_resolution = float(rp['Resolving_Power'])
+
+        # TODO: use pyMSpec once 'instrument_model' branch is merged into master
+        if instrument == 'FTICR':
+            rp200 = rp_resolution * rp_mz / 200.0
+        elif instrument == 'Orbitrap':
+            rp200 = rp_resolution * (rp_mz / 200.0)**0.5
+        else:
+            rp200 = rp_resolution
+
+        if rp200 < 85000:
+            params = RESOL_POWER_PARAMS['70K']
+        elif rp200 < 120000:
+            params = RESOL_POWER_PARAMS['100K']
+        elif rp200 < 195000:
+            params = RESOL_POWER_PARAMS['140K']
+        elif rp200 < 265000:
+            params = RESOL_POWER_PARAMS['250K']
+        else:
+            params = RESOL_POWER_PARAMS['500K']
+
+        ds_config = {
+            "database": {
+                "name": meta_json['metaspace_options']['Metabolite_Database']
+            },
+            "isotope_generation": {
+                "adducts": {'+': ['+H', '+K', '+Na'], '-': ['-H', '+Cl']}[polarity],
+                "charge": {
+                    "polarity": polarity,
+                    "n_charges": 1
+                },
+                "isocalc_sigma": round(params['sigma'], 6),
+                "isocalc_pts_per_mz": params['pts_per_mz']
+            },
+            "image_generation": {
+                "ppm": 3.0,
+                "nlevels": 30,
+                "q": 99,
+                "do_preprocessing": False
+            }
+        }
+
+        with tempfile.NamedTemporaryFile() as f:
+            json.dump(ds_config, f, indent=4)
+            f.flush()
+            obj = s3.Object(BUCKET, join(dest, 'config.json'))
+            obj.upload_file(f.name)
 
     def post(self):
         session_id = json.loads(self.request.body)['session_id']
@@ -95,7 +187,11 @@ class MoveHandler(tornado.web.RequestHandler):
         dest = join(user_email, organism, org_part, org_condition, session_id)
         self.move_s3_files(source=session_id, dest=dest)
 
-        post_to_slack(user_email, join(BUCKET, dest))
+        self.create_config(meta_json, dest)
+
+        institution = meta_json['Submitted_By']['Institution']
+        dataset_name = "{}//{}".format(institution, self.imzml_fn)
+        post_to_slack(user_email, dataset_name, join(BUCKET, dest))
 
         self.set_header("Content-Type", "text/plain")
         self.write("Uploaded to S3. Path: {}".format(dest))
