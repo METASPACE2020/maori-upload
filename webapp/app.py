@@ -5,6 +5,7 @@ import hmac
 import hashlib
 import json
 import boto3
+from collections import defaultdict
 
 import tornado.ioloop
 import tornado.web
@@ -16,7 +17,7 @@ METADATA_FILE_NAME = "meta.json"
 BUCKET = 'sm-engine-upload'
 
 s3 = boto3.resource('s3', os.getenv('AWS_REGION'))
-data_store = dict()
+data_store = defaultdict(dict)
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -58,7 +59,7 @@ class SubmitHandler(tornado.web.RequestHandler):
             with new_json_file(session_id) as fp:
                 fp.write(json.dumps(metadata))
 
-            self.data['meta_json'] = metadata
+            self.data[session_id]['meta_json'] = metadata
 
             dest = join(session_id, METADATA_FILE_NAME)
             local = join(get_dataset_path(session_id), METADATA_FILE_NAME)
@@ -86,7 +87,7 @@ class MoveHandler(tornado.web.RequestHandler):
     def post(self):
         session_id = json.loads(self.request.body)['session_id']
 
-        meta_json = self.data['meta_json']
+        meta_json = self.data[session_id]['meta_json']
         user_email = meta_json['Submitted_By']['Submitter']['Email'].lower()
         organism = meta_json['Sample_Information']['Organism']
         org_part = meta_json['Sample_Information']['Organism_Part']
@@ -95,7 +96,7 @@ class MoveHandler(tornado.web.RequestHandler):
         dest = join(user_email, organism, org_part, org_condition, session_id)
         self.move_s3_files(source=session_id, dest=dest)
 
-        post_to_slack(user_email, join(BUCKET, dest))
+        # post_to_slack(user_email, join(BUCKET, dest))
 
         self.set_header("Content-Type", "text/plain")
         self.write("Uploaded to S3. Path: {}".format(dest))

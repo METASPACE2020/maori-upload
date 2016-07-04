@@ -43,7 +43,6 @@ class S3FineUploader extends React.Component {
             },
             autoUpload: false,
             objectProperties: {
-                // key: (id) => `${Cookies.get("session_id")}/${this._fine_uploader.getFile(id).name}`
                 key: (id) => `${sessionStorage.getItem('session_id')}/${this._fine_uploader.getFile(id).name}`
             },
             signature: {
