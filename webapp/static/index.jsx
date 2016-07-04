@@ -100,7 +100,7 @@ class App extends React.Component {
         super(props);
         this.state = {
             showMetadataForm: false,
-            filesUploaded: false,
+            filesUploaded: [],
             metadataUploaded: false
         };
         sessionStorage.setItem('session_id', this.uuid4());
@@ -114,7 +114,7 @@ class App extends React.Component {
     }
 
     trySendMoveFilesRequest() {
-        if (this.state.filesUploaded && this.state.metadataUploaded) {
+        if (this.state.filesUploaded.length > 0 && this.state.metadataUploaded) {
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.open("POST", "/move_files");
             xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -122,6 +122,14 @@ class App extends React.Component {
                 session_id: sessionStorage.getItem('session_id')
             };
             xmlhttp.send(JSON.stringify(data));
+
+
+            let [imzml, ibd] = this.state.filesUploaded;
+            $('#thanks_message').html(
+                `Thank you for uploading files: <strong>${imzml}, ${ibd}</strong>`
+            );
+
+            this._uploader.resetFineUploader();
         }
     }
 
@@ -129,8 +137,8 @@ class App extends React.Component {
         this.setState({'showMetadataForm': showMetadataForm});
     }
 
-    setFilesUploaded(uploaded) {
-        this.setState({'filesUploaded': uploaded}, this.trySendMoveFilesRequest);
+    setFilesUploaded(files) {
+        this.setState({'filesUploaded': files}, this.trySendMoveFilesRequest);
     }
 
     setMetadataUploaded(uploaded) {

@@ -8,11 +8,11 @@ import Cookies from 'js-cookie'
 class S3FineUploader extends React.Component {
     constructor (props) {
         super(props);
-        this._uploader = null;
+        this._fine_uploader = null;
     }
 
     uploadValidate() {
-        var fnames = this._uploader.getUploads().map((x) => x.name);
+        var fnames = this._fine_uploader.getUploads().map((x) => x.name);
 
         if (fnames.length < 2) {
             alert(qq.format("Please choose 2 files for upload"));
@@ -27,10 +27,14 @@ class S3FineUploader extends React.Component {
         return true;
     }
 
+    resetFineUploader() {
+        this._fine_uploader.reset();
+    }
+
     componentDidMount() {
         const fineUploaderComponent = this;
 
-        this._uploader = new qq.s3.FineUploader({
+        this._fine_uploader = new qq.s3.FineUploader({
             element: this.refs.s3fu,
             template: 'qq-template-manual-trigger',
             request: {
@@ -39,8 +43,8 @@ class S3FineUploader extends React.Component {
             },
             autoUpload: false,
             objectProperties: {
-                // key: (id) => `${Cookies.get("session_id")}/${this._uploader.getFile(id).name}`
-                key: (id) => `${sessionStorage.getItem('session_id')}/${this._uploader.getFile(id).name}`
+                // key: (id) => `${Cookies.get("session_id")}/${this._fine_uploader.getFile(id).name}`
+                key: (id) => `${sessionStorage.getItem('session_id')}/${this._fine_uploader.getFile(id).name}`
             },
             signature: {
                 endpoint: '/s3/sign'
@@ -75,7 +79,8 @@ class S3FineUploader extends React.Component {
                 },
                 onAllComplete: function (succeeded, failed) {
                     if (failed.length == 0) {
-                        fineUploaderComponent.props.setFilesUploaded(true);
+                        let fileNames = this.getUploads().map(obj => obj.originalName);
+                        fineUploaderComponent.props.setFilesUploaded(fileNames);
                     }
                     else {
                         console.log('Failed file IDs: ', failed);
@@ -86,7 +91,7 @@ class S3FineUploader extends React.Component {
 
         $('#trigger-upload').click(() => {
             if (this.uploadValidate()) {
-                this._uploader.uploadStoredFiles();
+                this._fine_uploader.uploadStoredFiles();
                 this.props.setShowMetadataForm(true);
             }
         });
