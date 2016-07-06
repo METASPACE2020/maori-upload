@@ -98,6 +98,10 @@ class App extends React.Component {
 
     constructor (props) {
         super(props);
+        this.resetState();
+    }
+
+    resetState() {
         this.state = {
             showMetadataForm: false,
             filesUploaded: [],
@@ -115,21 +119,27 @@ class App extends React.Component {
 
     trySendMoveFilesRequest() {
         if (this.state.filesUploaded.length > 0 && this.state.metadataUploaded) {
-            let xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("POST", "/move_files");
-            xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            var data = {
-                session_id: sessionStorage.getItem('session_id')
-            };
-            xmlhttp.send(JSON.stringify(data));
+            var app = this;
+            $.ajax({
+                url: "/move_files",
+                data: JSON.stringify({
+                    session_id: sessionStorage.getItem('session_id')
+                }),
+                type: "POST",
+                contentType: "application/json",
+                success: function (data) {
+                    let [imzml, ibd] = app.state.filesUploaded;
+                    $('#thanks_message').html(
+                        `Thank you for uploading files: <strong>${imzml}, ${ibd}</strong>`
+                    );
 
-
-            let [imzml, ibd] = this.state.filesUploaded;
-            $('#thanks_message').html(
-                `Thank you for uploading files: <strong>${imzml}, ${ibd}</strong>`
-            );
-
-            this._uploader.resetFineUploader();
+                    app.resetState();
+                    app._uploader.resetFineUploader();
+                },
+                error: function (data) {
+                    alert(`Uploading failed: ${data.responseText}.\nPlease write us on kovalev@embl.de`);
+                }
+            });
         }
     }
 
@@ -147,27 +157,32 @@ class App extends React.Component {
 
     onMetadataFormSubmit({formData}) {
         if (this._uploader.uploadValidate())
-        {   
-            var body = {
-                session_id: sessionStorage.getItem('session_id'),
-                formData: formData
-            };
-            
-            let xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("POST", "/submit");
-            xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xmlhttp.send(JSON.stringify(body));
-            console.log(xmlhttp.response);
-            if (typeof Storage !== "undefined") {
-              const serializedFormData = JSON.stringify(formData);
-              localStorage.setItem(LOCAL_STORAGE_KEY, serializedFormData);
-            } else {/* not supported by browser */}
+        {
+            var app = this;
+            $.ajax({
+                url: "/submit",
+                data: JSON.stringify({
+                    session_id: sessionStorage.getItem('session_id'),
+                    formData: formData
+                }),
+                type: "POST",
+                contentType: "application/json",
+                success: function (data) {
+                    if (typeof Storage !== "undefined") {
+                        const serializedFormData = JSON.stringify(formData);
+                        localStorage.setItem(LOCAL_STORAGE_KEY, serializedFormData);
+                    } else {/* not supported by browser */}
 
-            alert("Thank you for submitting your datasets to METASPACE. We will follow up soon. " +
-                "Please don't reload the page until the uploading is finished");
+                    alert("Thank you for submitting your datasets to METASPACE. We will follow up soon. " +
+                        "Please don't reload the page until the uploading is finished");
 
-            this.setShowMetadataForm(false);
-            this.setMetadataUploaded(true);
+                    app.setShowMetadataForm(false);
+                    app.setMetadataUploaded(true);
+                },
+                error: function (data) {
+                    alert(`Metadata submitting failed: ${data.responseText}.\nPlease write us on kovalev@embl.de`);
+                }
+            });
         }
     }
 

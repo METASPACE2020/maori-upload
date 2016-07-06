@@ -27,11 +27,7 @@ class S3FineUploader extends React.Component {
         return true;
     }
 
-    resetFineUploader() {
-        this._fine_uploader.reset();
-    }
-
-    componentDidMount() {
+    initFineUploader() {
         const fineUploaderComponent = this;
 
         this._fine_uploader = new qq.s3.FineUploader({
@@ -90,10 +86,19 @@ class S3FineUploader extends React.Component {
 
         $('#trigger-upload').click(() => {
             if (this.uploadValidate()) {
+                $('#thanks_message').empty();
                 this._fine_uploader.uploadStoredFiles();
                 this.props.setShowMetadataForm(true);
             }
         });
+    }
+
+    resetFineUploader() {
+        this.initFineUploader();
+    }
+
+    componentDidMount() {
+        this.initFineUploader();
     }
 
     render() {
