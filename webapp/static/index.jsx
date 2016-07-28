@@ -102,10 +102,15 @@ class App extends React.Component {
     }
 
     resetState() {
+        const previousSubmission = localStorage.getItem(LOCAL_STORAGE_KEY);
+        const parsedFormData = JSON.parse(previousSubmission);
+        console.log(parsedFormData);
+
         this.state = {
             showMetadataForm: false,
             filesUploaded: [],
-            metadataUploaded: false
+            metadataUploaded: false,
+            formData: parsedFormData
         };
         sessionStorage.setItem('session_id', this.uuid4());
     }
@@ -189,7 +194,8 @@ class App extends React.Component {
     render() {
         var metadataForm;
         if (this.state.showMetadataForm) {
-            metadataForm = <MetadataForm onSubmit={this.onMetadataFormSubmit.bind(this)} {...this.props}/>
+            metadataForm = <MetadataForm onSubmit={this.onMetadataFormSubmit.bind(this)}
+                                         formData={this.state.formData} {...this.props}/>
         }
 
         return (
@@ -285,12 +291,7 @@ domready(() => {
     console.log(validationSchema);
 
     if (typeof Storage !== "undefined") {
-        const previousSubmission = localStorage.getItem(LOCAL_STORAGE_KEY);
-        console.log(previousSubmission);
-        const parsedFormData = JSON.parse(previousSubmission);
-        console.log(parsedFormData);
         render(<App schema={schema}
-                    formData={parsedFormData}  // can handle null
                     uiSchema={uiSchema}
                     validationSchema={validationSchema}/>,
                document.getElementById("app-container"));
