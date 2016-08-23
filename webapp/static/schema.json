@@ -201,7 +201,7 @@
     },
     "metaspace_options":{
       "type": "object",
-      "required": ["Metabolite_Database"],
+      "required": ["Metabolite_Database", "Dataset_Name"],
       "properties":{
         "Metabolite_Database": {
             "type": "string",
@@ -218,6 +218,9 @@
           "type": "boolean",
           "default": false,
           "format": "checkbox"
+       },
+      "Dataset_Name":{
+          "type": "string"
        }
       }
     },

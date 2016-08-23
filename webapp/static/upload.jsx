@@ -11,8 +11,12 @@ class S3FineUploader extends React.Component {
         this._fine_uploader = null;
     }
 
+    getFileNames() {
+        return this._fine_uploader.getUploads().map((x) => x.name);
+    }
+
     uploadValidate() {
-        var fnames = this._fine_uploader.getUploads().map((x) => x.name);
+        let fnames = this.getFileNames();
 
         if (fnames.length < 2) {
             alert(qq.format("Please choose 2 files for upload"));
@@ -89,6 +93,8 @@ class S3FineUploader extends React.Component {
                 $('#thanks_message').empty();
                 this._fine_uploader.uploadStoredFiles();
                 this.props.setShowMetadataForm(true);
+                let dsName = this.getFileNames()[0].replace(/\.[^/.]+$/, "");
+                this.props.setDatasetName(dsName);
             }
         });
     }

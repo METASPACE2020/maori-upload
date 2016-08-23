@@ -142,7 +142,7 @@ class App extends React.Component {
                     app._uploader.resetFineUploader();
                 },
                 error: function (data) {
-                    alert(`Uploading failed: ${data.responseText}.\nPlease write us on kovalev@embl.de`);
+                    alert(`Uploading failed: ${data.responseText}.\nPlease write us on alexandrov-group@embl.de`);
                 }
             });
         }
@@ -150,6 +150,12 @@ class App extends React.Component {
 
     setShowMetadataForm(showMetadataForm) {
         this.setState({'showMetadataForm': showMetadataForm});
+    }
+
+    setDatasetName(name) {
+        let new_state = this.state;
+        new_state.formData.metaspace_options.Dataset_Name = name;
+        this.setState(new_state);
     }
 
     setFilesUploaded(files) {
@@ -185,7 +191,7 @@ class App extends React.Component {
                     app.setMetadataUploaded(true);
                 },
                 error: function (data) {
-                    alert(`Metadata submitting failed: ${data.responseText}.\nPlease write us on kovalev@embl.de`);
+                    alert(`Metadata submitting failed: ${data.responseText}.\nPlease write us on alexandrov-group@embl.de`);
                 }
             });
         }
@@ -202,7 +208,8 @@ class App extends React.Component {
             <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
                 <S3FineUploader ref={x => this._uploader = x}
                                 setShowMetadataForm={this.setShowMetadataForm.bind(this)}
-                                setFilesUploaded={this.setFilesUploaded.bind(this)}/>
+                                setFilesUploaded={this.setFilesUploaded.bind(this)}
+                                setDatasetName={this.setDatasetName.bind(this)}/>
                 { metadataForm }
             </div>
         )
