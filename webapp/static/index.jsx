@@ -124,6 +124,9 @@ class App extends React.Component {
 
     tryResetState() {
         if (this.state.filesUploaded.length > 0 && this.state.metadataUploaded) {
+            $('#thanks_message').html(
+                `Thank you for uploading files: <strong>${this.state.filesUploaded}</strong>`
+            );
             this.resetState();
             this._uploader.resetFineUploader();
         }
@@ -140,11 +143,11 @@ class App extends React.Component {
     }
 
     setFilesUploaded(files) {
-        this.setState({'filesUploaded': files}, this.tryResetState());
+        this.setState({'filesUploaded': files}, this.tryResetState);
     }
 
     setMetadataUploaded(uploaded) {
-        this.setState({'metadataUploaded': uploaded}, this.tryResetState());
+        this.setState({'metadataUploaded': uploaded}, this.tryResetState);
     }
 
     onMetadataFormSubmit({formData}) {
