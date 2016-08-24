@@ -5,72 +5,18 @@ import hmac
 import hashlib
 import json
 import boto3
-from collections import defaultdict
 import tempfile
-
 import tornado.ioloop
 import tornado.web
+from datetime import datetime as dt
 
-from notify import post_to_slack
+from notify import post_to_slack, post_job_to_queue
+
 
 TMP_STORAGE_PATH = "/tmp"
 METADATA_FILE_NAME = "meta.json"
+CONFIG_FILE_NAME = "config.json"
 BUCKET = 'sm-engine-upload'
-
-s3 = boto3.resource('s3', os.getenv('AWS_REGION'))
-data_store = defaultdict(dict)
-
-
-class MainHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.render('static/index.html')
-
-
-def new_json_file(session_id):
-    dir_path = get_dataset_path(session_id)
-    file_path = join(dir_path, METADATA_FILE_NAME)
-    return open(file_path, 'wb')
-
-
-def get_dataset_path(session_id):
-    return join(TMP_STORAGE_PATH, session_id)
-
-
-def prepare_directory(session_id):
-    dir_path = get_dataset_path(session_id)
-    if not isdir(dir_path):
-        os.mkdir(dir_path)
-
-
-class SubmitHandler(tornado.web.RequestHandler):
-
-    def initialize(self, data):
-        self.data = data
-
-    def upload_metadata_s3(self, local, dest):
-        obj = s3.Object(BUCKET, dest)
-        obj.upload_file(local)
-
-    def post(self):
-        if self.request.headers["Content-Type"].startswith("application/json"):
-            data = json.loads(self.request.body)
-            session_id = data['session_id']
-            metadata = data['formData']
-            prepare_directory(session_id)
-            with new_json_file(session_id) as fp:
-                fp.write(json.dumps(metadata))
-
-            self.data[session_id]['meta_json'] = metadata
-
-            dest = join(session_id, METADATA_FILE_NAME)
-            local = join(get_dataset_path(session_id), METADATA_FILE_NAME)
-            self.upload_metadata_s3(local, dest)
-
-            self.set_header("Content-Type", "text/plain")
-            self.write("Uploaded to S3: {}".format(data['formData']))
-        else:
-            print(self.request.headers["Content-Type"])
-            self.write("Error: Content-Type has to be 'application/json'")
 
 # copy-pasted from SM_distributed/scripts/generate_ds_config.py
 RESOL_POWER_PARAMS = {
@@ -106,98 +52,103 @@ RESOL_POWER_PARAMS = {
     }
 }
 
-class MoveHandler(tornado.web.RequestHandler):
 
-    def initialize(self, data):
-        self.data = data
-        self.imzml_fn = None
+s3 = boto3.resource('s3', os.getenv('AWS_REGION'))
 
-    def move_s3_files(self, source, dest):
-        for obj in s3.Bucket(BUCKET).objects.filter(Prefix=source):
-            fn = obj.key.split('/')[-1]
-            if fn:
-                s3.Object(BUCKET, join(dest, fn)).copy_from(CopySource=join(BUCKET, obj.key))
-                obj.delete()
 
-                if fn.lower().endswith('imzml'):
-                    self.imzml_fn = fn.rsplit('.', 1)[0]
+def create_config(meta_json):
+    polarity_dict = {'Positive': '+', 'Negative': '-'}
+    polarity = polarity_dict[meta_json['MS_Analysis']['Polarity']]
+    instrument = meta_json['MS_Analysis']['Analyzer']
+    rp = meta_json['MS_Analysis']['Detector_Resolving_Power']
+    rp_mz = float(rp['mz'])
+    rp_resolution = float(rp['Resolving_Power'])
 
-    def create_config(self, meta_json, dest):
-        polarity_dict = {'Positive': '+', 'Negative': '-'}
-        polarity = polarity_dict[meta_json['MS_Analysis']['Polarity']]
-        instrument = meta_json['MS_Analysis']['Analyzer']
-        rp = meta_json['MS_Analysis']['Detector_Resolving_Power']
-        rp_mz = float(rp['mz'])
-        rp_resolution = float(rp['Resolving_Power'])
+    # TODO: use pyMSpec once 'instrument_model' branch is merged into master
+    if instrument == 'FTICR':
+        rp200 = rp_resolution * rp_mz / 200.0
+    elif instrument == 'Orbitrap':
+        rp200 = rp_resolution * (rp_mz / 200.0) ** 0.5
+    else:
+        rp200 = rp_resolution
 
-        # TODO: use pyMSpec once 'instrument_model' branch is merged into master
-        if instrument == 'FTICR':
-            rp200 = rp_resolution * rp_mz / 200.0
-        elif instrument == 'Orbitrap':
-            rp200 = rp_resolution * (rp_mz / 200.0)**0.5
-        else:
-            rp200 = rp_resolution
+    if rp200 < 85000:
+        params = RESOL_POWER_PARAMS['70K']
+    elif rp200 < 120000:
+        params = RESOL_POWER_PARAMS['100K']
+    elif rp200 < 195000:
+        params = RESOL_POWER_PARAMS['140K']
+    elif rp200 < 265000:
+        params = RESOL_POWER_PARAMS['250K']
+    elif rp200 < 390000:
+        params = RESOL_POWER_PARAMS['280K']
+    else:
+        params = RESOL_POWER_PARAMS['500K']
 
-        if rp200 < 85000:
-            params = RESOL_POWER_PARAMS['70K']
-        elif rp200 < 120000:
-            params = RESOL_POWER_PARAMS['100K']
-        elif rp200 < 195000:
-            params = RESOL_POWER_PARAMS['140K']
-        elif rp200 < 265000:
-            params = RESOL_POWER_PARAMS['250K']
-        elif rp200 < 390000:
-            params = RESOL_POWER_PARAMS['280K']
-        else:
-            params = RESOL_POWER_PARAMS['500K']
-
-        ds_config = {
-            "database": {
-                "name": meta_json['metaspace_options']['Metabolite_Database']
+    return {
+        "database": {
+            "name": meta_json['metaspace_options']['Metabolite_Database']
+        },
+        "isotope_generation": {
+            "adducts": {'+': ['+H', '+K', '+Na'], '-': ['-H', '+Cl']}[polarity],
+            "charge": {
+                "polarity": polarity,
+                "n_charges": 1
             },
-            "isotope_generation": {
-                "adducts": {'+': ['+H', '+K', '+Na'], '-': ['-H', '+Cl']}[polarity],
-                "charge": {
-                    "polarity": polarity,
-                    "n_charges": 1
-                },
-                "isocalc_sigma": round(params['sigma'], 6),
-                "isocalc_pts_per_mz": params['pts_per_mz']
-            },
-            "image_generation": {
-                "ppm": 3.0,
-                "nlevels": 30,
-                "q": 99,
-                "do_preprocessing": False
-            }
+            "isocalc_sigma": round(params['sigma'], 6),
+            "isocalc_pts_per_mz": params['pts_per_mz']
+        },
+        "image_generation": {
+            "ppm": 3.0,
+            "nlevels": 30,
+            "q": 99,
+            "do_preprocessing": False
         }
+    }
 
-        with tempfile.NamedTemporaryFile() as f:
-            json.dump(ds_config, f, indent=4)
-            f.flush()
-            obj = s3.Object(BUCKET, join(dest, 'config.json'))
-            obj.upload_file(f.name)
+
+def upload_to_s3(doc, bucket, key):
+    with tempfile.NamedTemporaryFile() as f:
+        json.dump(doc, f, indent=4)
+        f.flush()
+        obj = s3.Object(bucket, key)
+        obj.upload_file(f.name)
+
+
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render('static/index.html')
+
+
+class SubmitHandler(tornado.web.RequestHandler):
 
     def post(self):
-        session_id = json.loads(self.request.body)['session_id']
+        if self.request.headers["Content-Type"].startswith("application/json"):
+            data = json.loads(self.request.body)
+            session_id = data['session_id']
+            metadata = data['formData']
 
-        meta_json = self.data[session_id]['meta_json']
-        user_email = meta_json['Submitted_By']['Submitter']['Email'].lower()
-        organism = meta_json['Sample_Information']['Organism']
-        org_part = meta_json['Sample_Information']['Organism_Part']
-        org_condition = meta_json['Sample_Information']['Condition']
+            upload_to_s3(metadata, BUCKET, join(session_id, METADATA_FILE_NAME))
 
-        dest = join(user_email, organism, org_part, org_condition, session_id)
-        self.move_s3_files(source=session_id, dest=dest)
+            ds_config = create_config(metadata)
+            upload_to_s3(ds_config, BUCKET, join(session_id, CONFIG_FILE_NAME))
 
-        self.create_config(meta_json, dest)
+            ds_name = '{}//{}'.format(metadata['Submitted_By']['Institution'],
+                                      metadata['metaspace_options']['Dataset_Name'])
+            msg = {
+                'ds_id': dt.now().strftime("%Y-%m-%d_%Hh%Mm"),
+                'ds_name': ds_name,
+                'input_path': 's3a://{}/{}'.format(BUCKET, session_id),
+                'user_email': metadata['Submitted_By']['Submitter']['Email'].lower()
+            }
+            post_job_to_queue(msg)
+            post_to_slack('email', " [v] Sent {}".format(json.dumps(msg)))
 
-        institution = meta_json['Submitted_By']['Institution']
-        dataset_name = "{}//{}".format(institution, self.imzml_fn)
-        post_to_slack(user_email, dataset_name, join(BUCKET, dest))
-
-        self.set_header("Content-Type", "text/plain")
-        self.write("Uploaded to S3. Path: {}".format(dest))
+            self.set_header("Content-Type", "text/plain")
+            self.write("Uploaded to S3: {}".format(data['formData']))
+        else:
+            print(self.request.headers["Content-Type"])
+            self.write("Error: Content-Type has to be 'application/json'")
 
 
 class UploadHandler(tornado.web.RequestHandler):
@@ -234,8 +185,7 @@ def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
         (r'/s3/sign', UploadHandler),
-        (r"/submit", SubmitHandler, dict(data=data_store)),
-        (r'/move_files', MoveHandler, dict(data=data_store)),
+        (r"/submit", SubmitHandler)
     ],
         static_path=join(dirname(__file__), "static"),
         static_url_prefix='/static/',

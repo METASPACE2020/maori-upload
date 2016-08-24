@@ -122,29 +122,10 @@ class App extends React.Component {
         });
     }
 
-    trySendMoveFilesRequest() {
+    tryResetState() {
         if (this.state.filesUploaded.length > 0 && this.state.metadataUploaded) {
-            var app = this;
-            $.ajax({
-                url: "/move_files",
-                data: JSON.stringify({
-                    session_id: sessionStorage.getItem('session_id')
-                }),
-                type: "POST",
-                contentType: "application/json",
-                success: function (data) {
-                    let [imzml, ibd] = app.state.filesUploaded;
-                    $('#thanks_message').html(
-                        `Thank you for uploading files: <strong>${imzml}, ${ibd}</strong>`
-                    );
-
-                    app.resetState();
-                    app._uploader.resetFineUploader();
-                },
-                error: function (data) {
-                    alert(`Uploading failed: ${data.responseText}.\nPlease write us on alexandrov-group@embl.de`);
-                }
-            });
+            this.resetState();
+            this._uploader.resetFineUploader();
         }
     }
 
@@ -159,11 +140,11 @@ class App extends React.Component {
     }
 
     setFilesUploaded(files) {
-        this.setState({'filesUploaded': files}, this.trySendMoveFilesRequest);
+        this.setState({'filesUploaded': files}, this.tryResetState());
     }
 
     setMetadataUploaded(uploaded) {
-        this.setState({'metadataUploaded': uploaded}, this.trySendMoveFilesRequest);
+        this.setState({'metadataUploaded': uploaded}, this.tryResetState());
     }
 
     onMetadataFormSubmit({formData}) {
