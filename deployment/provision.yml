@@ -17,6 +17,10 @@
     - name: Create the project directory
       file: state=directory path={{ project_root }}/{{ project_name }} mode=755
 
+    - name: Put config to {{ project_path }}/webapp/config.yml
+      template: src=../webapp/config.yml.template dest={{ project_path }}/webapp/config.yml
+                owner={{ user }} group={{ user }} mode=0600
+
     - name: Install required system packages
       become: yes
       apt: pkg={{ item }} state=installed update-cache=yes

@@ -1,0 +1,2 @@
+[maori-upload]
+52.31.96.86 ansible_ssh_user='ubuntu' ansible_ssh_private_key_file='maori-upload.pem'

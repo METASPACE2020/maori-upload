@@ -23,3 +23,10 @@ python_packages:
   - pika
 nodejs_version: node-v4.4.5-linux-x64
 nodejs_url: https://nodejs.org/dist/v4.4.5/{{ nodejs_version }}.tar.xz
+
+aws_access_key_id:
+aws_s3_bucket:
+slack_channel:
+slack_webhook_url:
+rabbitmq_host:
+rabbitmq_password:

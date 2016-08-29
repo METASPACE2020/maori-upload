@@ -1,8 +1,8 @@
 slack:
-  channel:
-  webhook_url:
+  channel: "{{ slack_channel }}"
+  webhook_url: {{ slack_webhook_url }}
 
 rabbitmq:
-  host: localhost
+  host: {{ rabbitmq_host }}
   user: sm
-  password:
+  password: {{ rabbitmq_password }}

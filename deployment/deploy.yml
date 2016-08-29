@@ -34,11 +34,11 @@
       when: "'no such file' in supervisorctl_status_out.stdout"
 
     - name: Restart the tornado web app running under supervisor
-      shell: supervisorctl restart all
+      shell: supervisorctl reread && supervisorctl reload
       args:
         executable: /bin/bash
       when: "'maori-upload' in supervisorctl_status_out.stdout"
       register: command_result
-      failed_when: "'ERROR' in command_result.stdout"
+      failed_when: "'ERROR' in command_result.stdout or 'FATAL' in command_result.stdout"
 
     - debug: var=command_result
