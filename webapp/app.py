@@ -54,9 +54,6 @@ RESOL_POWER_PARAMS = {
 }
 
 
-s3 = boto3.resource('s3', os.getenv('AWS_REGION'))
-
-
 def create_config(meta_json):
     polarity_dict = {'Positive': '+', 'Negative': '-'}
     polarity = polarity_dict[meta_json['MS_Analysis']['Polarity']]
@@ -108,14 +105,6 @@ def create_config(meta_json):
     }
 
 
-def upload_to_s3(doc, bucket, key):
-    with tempfile.NamedTemporaryFile() as f:
-        json.dump(doc, f, indent=4)
-        f.flush()
-        obj = s3.Object(bucket, key)
-        obj.upload_file(f.name)
-
-
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render('static/index.html')
@@ -125,6 +114,14 @@ class SubmitHandler(tornado.web.RequestHandler):
 
     def initialize(self):
         self.config = yaml.load(open(options.config))
+        self.s3 = boto3.resource('s3', self.config['aws']['region'])
+
+    def upload_to_s3(self, doc, bucket, key):
+        with tempfile.NamedTemporaryFile() as f:
+            json.dump(doc, f, indent=4)
+            f.flush()
+            obj = self.s3.Object(bucket, key)
+            obj.upload_file(f.name)
 
     def post(self):
         if self.request.headers["Content-Type"].startswith("application/json"):
@@ -132,10 +129,10 @@ class SubmitHandler(tornado.web.RequestHandler):
             session_id = data['session_id']
             metadata = data['formData']
 
-            upload_to_s3(metadata, self.config['aws']['s3_bucket'], join(session_id, METADATA_FILE_NAME))
+            self.upload_to_s3(metadata, self.config['aws']['s3_bucket'], join(session_id, METADATA_FILE_NAME))
 
             ds_config = create_config(metadata)
-            upload_to_s3(ds_config, self.config['aws']['s3_bucket'], join(session_id, CONFIG_FILE_NAME))
+            self.upload_to_s3(ds_config, self.config['aws']['s3_bucket'], join(session_id, CONFIG_FILE_NAME))
 
             ds_name = '{}//{}'.format(metadata['Submitted_By']['Institution'],
                                       metadata['metaspace_options']['Dataset_Name'])
@@ -156,14 +153,16 @@ class SubmitHandler(tornado.web.RequestHandler):
 
 
 class UploadHandler(tornado.web.RequestHandler):
-    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+    def initialize(self):
+        self.config = yaml.load(open(options.config))
 
     def sign_policy(self, policy):
         """ Sign and return the policy document for a simple upload.
         http://aws.amazon.com/articles/1434/#signyours3postform """
         signed_policy = base64.b64encode(policy)
         signature = base64.b64encode(hmac.new(
-            self.AWS_SECRET_ACCESS_KEY, signed_policy, hashlib.sha1).
+            self.config['aws']['secret_access_key'], signed_policy, hashlib.sha1).
             digest())
         return {'policy': signed_policy, 'signature': signature}
 
@@ -171,7 +170,7 @@ class UploadHandler(tornado.web.RequestHandler):
         """ Sign and return the headers for a chunked upload. """
         return {
             'signature': base64.b64encode(hmac.new(
-                self.AWS_SECRET_ACCESS_KEY, headers, hashlib.sha1).
+                self.config['aws']['secret_access_key'], headers, hashlib.sha1).
                 digest())
         }
 
