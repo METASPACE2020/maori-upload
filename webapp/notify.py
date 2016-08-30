@@ -2,12 +2,11 @@ from requests import post
 import json
 import yaml
 import pika
-
-
-config = yaml.load(open('config.yml'))
+from tornado.options import options
 
 
 def post_to_slack(emoji, msg):
+    config = yaml.load(open(options.config))
     if config['slack']['webhook_url']:
         msg = {"channel": config['slack']['channel'],
                "username": "webhookbot",
@@ -17,6 +16,7 @@ def post_to_slack(emoji, msg):
 
 
 def post_job_to_queue(m):
+    config = yaml.load(open(options.config))
     creds = pika.PlainCredentials(config['rabbitmq']['user'], config['rabbitmq']['password'])
     conn = pika.BlockingConnection(pika.ConnectionParameters(host=config['rabbitmq']['host'], credentials=creds))
 

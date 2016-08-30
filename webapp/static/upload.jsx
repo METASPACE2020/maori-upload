@@ -2,7 +2,6 @@ import React from 'react'
 import qq from 'fine-uploader/lib/s3'
 import $ from 'jquery'
 import 'fine-uploader/lib/rows.css'
-import Cookies from 'js-cookie'
 
 
 class S3FineUploader extends React.Component {
@@ -38,8 +37,8 @@ class S3FineUploader extends React.Component {
             element: this.refs.s3fu,
             template: 'qq-template-manual-trigger',
             request: {
-                endpoint: 'sm-engine-upload.s3.amazonaws.com',
-                accessKey: 'AKIAJN65WGJHXJQXMIEA'
+                endpoint: `${this.config.aws.s3_bucket}.s3.amazonaws.com`,
+                accessKey: this.config.aws.accees_key_id
             },
             autoUpload: false,
             objectProperties: {
@@ -104,7 +103,10 @@ class S3FineUploader extends React.Component {
     }
 
     componentDidMount() {
-        this.initFineUploader();
+        $.get('/config.json', function (result) {
+            this.config = result;
+            this.initFineUploader();
+        }.bind(this));
     }
 
     render() {

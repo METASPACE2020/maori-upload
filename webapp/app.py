@@ -8,7 +8,9 @@ import boto3
 import tempfile
 import tornado.ioloop
 import tornado.web
+from tornado.options import define, options
 from datetime import datetime as dt
+import yaml
 
 from notify import post_to_slack, post_job_to_queue
 
@@ -16,7 +18,6 @@ from notify import post_to_slack, post_job_to_queue
 TMP_STORAGE_PATH = "/tmp"
 METADATA_FILE_NAME = "meta.json"
 CONFIG_FILE_NAME = "config.json"
-BUCKET = 'sm-engine-upload'
 
 # copy-pasted from SM_distributed/scripts/generate_ds_config.py
 RESOL_POWER_PARAMS = {
@@ -122,23 +123,26 @@ class MainHandler(tornado.web.RequestHandler):
 
 class SubmitHandler(tornado.web.RequestHandler):
 
+    def initialize(self):
+        self.config = yaml.load(open(options.config))
+
     def post(self):
         if self.request.headers["Content-Type"].startswith("application/json"):
             data = json.loads(self.request.body)
             session_id = data['session_id']
             metadata = data['formData']
 
-            upload_to_s3(metadata, BUCKET, join(session_id, METADATA_FILE_NAME))
+            upload_to_s3(metadata, self.config['aws']['s3_bucket'], join(session_id, METADATA_FILE_NAME))
 
             ds_config = create_config(metadata)
-            upload_to_s3(ds_config, BUCKET, join(session_id, CONFIG_FILE_NAME))
+            upload_to_s3(ds_config, self.config['aws']['s3_bucket'], join(session_id, CONFIG_FILE_NAME))
 
             ds_name = '{}//{}'.format(metadata['Submitted_By']['Institution'],
                                       metadata['metaspace_options']['Dataset_Name'])
             msg = {
                 'ds_id': dt.now().strftime("%Y-%m-%d_%Hh%Mm"),
                 'ds_name': ds_name,
-                'input_path': 's3a://{}/{}'.format(BUCKET, session_id),
+                'input_path': 's3a://{}/{}'.format(self.config['aws']['s3_bucket'], session_id),
                 'user_email': metadata['Submitted_By']['Submitter']['Email'].lower()
             }
             post_job_to_queue(msg)
@@ -181,11 +185,22 @@ class UploadHandler(tornado.web.RequestHandler):
         return self.write(response_data)
 
 
+class WebConfigHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        self.write(json.load(open(options.web_config)))
+
+
 def make_app():
+    define('config', type=str)
+    define('web_config', type=str)
+    options.parse_command_line()
+
     return tornado.web.Application([
         (r"/", MainHandler),
         (r'/s3/sign', UploadHandler),
-        (r"/submit", SubmitHandler)
+        (r"/submit", SubmitHandler),
+        (r"/config.json", WebConfigHandler)
     ],
         static_path=join(dirname(__file__), "static"),
         static_url_prefix='/static/',

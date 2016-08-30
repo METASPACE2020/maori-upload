@@ -1,3 +1,9 @@
+aws:
+  access_key_id: {{ aws_access_key_id }}
+  secret_access_key: {{ aws_secret_access_key }}
+  region: {{ aws_region }}
+  s3_bucket: {{ aws_s3_bucket }}
+
 slack:
   channel: "{{ slack_channel }}"
   webhook_url: {{ slack_webhook_url }}

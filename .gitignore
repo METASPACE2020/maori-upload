@@ -127,4 +127,5 @@ deployment/*.retry
 
 webapp/static/bundle*
 webapp/static/*.gif
-config.yml
+webapp/conf/*.yml
+webapp/conf/*.json
