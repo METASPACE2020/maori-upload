@@ -29,7 +29,7 @@ class SelectOrFreeTextWidget extends React.Component {
         if (this.state)
             return this.state['hasCustomValue'];
         else
-            return this.props.options.map(opt => opt.value).indexOf(this.props.value) < 0;
+            return this.props.options.enumOptions.map(opt => opt.value).indexOf(this.props.value) < 0;
     }
 
     render() {
@@ -76,7 +76,7 @@ class SelectOrFreeTextWidget extends React.Component {
               }
             }}>
           {
-            options.map(({value, label}, i) => {
+            options.enumOptions.map(({value, label}, i) => {
               return <option key={i} value={value}>{label}</option>;
             })
           }
@@ -138,7 +138,14 @@ class App extends React.Component {
 
     setDatasetName(name) {
         let new_state = this.state;
-        new_state.formData.metaspace_options.Dataset_Name = name;
+        if (new_state.formData == null)
+            new_state.formData = {
+                'metaspace_options': {
+                    'Dataset_Name': name
+                }
+            };
+        else
+            new_state.formData.metaspace_options.Dataset_Name = name;
         this.setState(new_state);
     }
 
