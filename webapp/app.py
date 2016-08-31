@@ -143,7 +143,7 @@ class SubmitHandler(tornado.web.RequestHandler):
                 'user_email': metadata['Submitted_By']['Submitter']['Email'].lower()
             }
             post_job_to_queue(msg)
-            post_to_slack('email', " [v] Sent {}".format(json.dumps(msg)))
+            post_to_slack('email', " [v] Sent: {}".format(json.dumps(msg)))
 
             self.set_header("Content-Type", "text/plain")
             self.write("Uploaded to S3: {}".format(data['formData']))

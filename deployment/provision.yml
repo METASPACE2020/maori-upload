@@ -14,12 +14,15 @@
       become: yes
       user: name={{ user }} state=present
 
-    - name: Create the project directory
-      file: state=directory path={{ project_root }}/{{ project_name }} mode=755
+    - name: Pull sources from the repository
+      git: repo={{ project_repo }} dest={{ project_path }} version={{ branch }}
 
     - name: Put config to {{ project_path }}/webapp/conf/config.yml
-      template: src=../webapp/conf/config.yml.template dest={{ project_path }}/webapp/conf/config.yml
+      template: src=../webapp/conf/{{ item }}.template dest={{ project_path }}/webapp/conf/{{ item }}
                 owner={{ user }} group={{ user }} mode=0600
+      with_items:
+        - config.yml
+        - web_config.json
 
     - name: Install required system packages
       become: yes
