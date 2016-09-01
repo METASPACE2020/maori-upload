@@ -122,6 +122,7 @@ deployment/key*
 deployment/*.pem
 deployment/*.pub
 deployment/*.retry
+deployment/hosts_aws_*
 
 .vagrant
 

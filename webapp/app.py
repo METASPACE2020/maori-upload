@@ -137,13 +137,13 @@ class SubmitHandler(tornado.web.RequestHandler):
             ds_name = '{}//{}'.format(metadata['Submitted_By']['Institution'],
                                       metadata['metaspace_options']['Dataset_Name'])
             msg = {
-                'ds_id': dt.now().strftime("%Y-%m-%d_%Hh%Mm"),
+                'ds_id': dt.now().strftime("%Y-%m-%d_%Hh%Mm%Ss"),
                 'ds_name': ds_name,
                 'input_path': 's3a://{}/{}'.format(self.config['aws']['s3_bucket'], session_id),
                 'user_email': metadata['Submitted_By']['Submitter']['Email'].lower()
             }
-            post_job_to_queue(msg)
             post_to_slack('email', " [v] Sent: {}".format(json.dumps(msg)))
+            post_job_to_queue(msg)
 
             self.set_header("Content-Type", "text/plain")
             self.write("Uploaded to S3: {}".format(data['formData']))
