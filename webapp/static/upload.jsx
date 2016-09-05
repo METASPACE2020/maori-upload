@@ -79,8 +79,6 @@ class S3FineUploader extends React.Component {
                     if (failed.length == 0) {
                         let fileNames = this.getUploads().map(obj => obj.originalName);
                         fineUploaderComponent.props.setFilesUploaded(fileNames);
-                        let dsName = fineUploaderComponent.getFileNames()[0].replace(/\.[^/.]+$/, "");
-                        fineUploaderComponent.props.setDatasetName(dsName);
                     }
                     else {
                         console.log('Failed file IDs: ', failed);
@@ -93,6 +91,8 @@ class S3FineUploader extends React.Component {
             if (this.uploadValidate()) {
                 $('#thanks_message').empty();
                 fineUploaderComponent.props.setShowMetadataForm(true);
+                let dsName = fineUploaderComponent.getFileNames()[0].replace(/\.[^/.]+$/, "");
+                fineUploaderComponent.props.setDatasetName(dsName);
                 this._fine_uploader.uploadStoredFiles();
             }
         });
