@@ -7,12 +7,11 @@ from tornado.options import options
 
 def post_to_slack(emoji, msg):
     config = yaml.load(open(options.config))
-    if config['slack']['webhook_url']:
-        msg = {"channel": config['slack']['channel'],
-               "username": "webhookbot",
-               "text": ":{}:{}".format(emoji, msg),
-               "icon_emoji": ":robot_face:"}
-        post(config['slack']['webhook_url'], json=msg)
+    msg = {"channel": config['slack']['channel'],
+           "username": "webhookbot",
+           "text": ":{}:{}".format(emoji, msg),
+           "icon_emoji": ":robot_face:"}
+    post(config['slack']['webhook_url'], json=msg)
 
 
 def post_job_to_queue(m):
