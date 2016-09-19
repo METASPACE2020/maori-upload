@@ -142,8 +142,11 @@ class SubmitHandler(tornado.web.RequestHandler):
                 'input_path': 's3a://{}/{}'.format(self.config['aws']['s3_bucket'], session_id),
                 'user_email': metadata['Submitted_By']['Submitter']['Email'].lower()
             }
-            post_to_slack('email', " [v] Sent: {}".format(json.dumps(msg)))
-            post_job_to_queue(msg)
+
+            if self.config['slack']['webhook_url']:
+                post_to_slack('email', " [v] Sent: {}".format(json.dumps(msg)))
+            if self.config['rabbitmq']['host']:
+                post_job_to_queue(msg)
 
             self.set_header("Content-Type", "text/plain")
             self.write("Uploaded to S3: {}".format(data['formData']))
