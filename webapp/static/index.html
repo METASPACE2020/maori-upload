@@ -51,10 +51,10 @@
                     <span class="qq-upload-drop-area-text-selector"></span>
                 </div>
                 <div class="buttons">
-                    <div class="qq-upload-button-selector qq-upload-button">
+                    <div id="select-files-button" class="qq-upload-button-selector qq-upload-button">
                         <div>Select files</div>
                     </div>
-                    <button type="button" id="trigger-upload" class="btn btn-primary">
+                    <button type="button" id="trigger-upload" class="qq-upload-button">
                         <i class="icon-upload icon-white"></i> Upload
                     </button>
                 </div>
@@ -109,7 +109,7 @@
         <style>
             #trigger-upload {
                 color: white;
-                background-color: #00ABC7;
+                background-color: #0069e0;
                 font-size: 14px;
                 padding: 7px 20px;
                 background-image: none;
@@ -130,6 +130,10 @@
             .qq-uploader {
                 min-height: 50px;
                 max-height: 150px;
+            }
+
+            #select-files-button {
+                background: #0069e0;
             }
 
             #instructions {
