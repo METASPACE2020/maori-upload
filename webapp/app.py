@@ -19,38 +19,17 @@ TMP_STORAGE_PATH = "/tmp"
 METADATA_FILE_NAME = "meta.json"
 CONFIG_FILE_NAME = "config.json"
 
-# copy-pasted from SM_distributed/scripts/generate_ds_config.py
+# Resolving Power defined at m/z 200. Compromise values based on the average resolving power @m/z 500 of Orbitrap and FTICR instruments. #todo replace this with full instrument model
 RESOL_POWER_PARAMS = {
-    '70K': {
-        'fwhm': 0.00285714285,
-        'sigma': 0.006728,
-        'pts_per_mz': 1750
-    },
-    '100K': {
-        'fwhm': 0.002,
-        'sigma': 0.0047096,
-        'pts_per_mz': 2500
-    },
-    '140K': {
-        'fwhm': 0.00142857142,
-        'sigma': 0.003364,
-        'pts_per_mz': 3500
-    },
-    '250K': {
-        'fwhm': 0.0008,
-        'sigma': 0.00188384,
-        'pts_per_mz': 6250
-    },
-    '280K': {
-        'fwhm': 0.00071428571,
-        'sigma': 0.001682,
-        'pts_per_mz': 7000
-    },
-    '500K': {
-        'fwhm': 0.0004,
-        'sigma': 0.00094192,
-        'pts_per_mz': 12500
-    }
+    '70K': {'sigma': 0.00247585727028, 'fwhm': 0.00583019832869, 'pts_per_mz': 2019},
+    '100K': {'sigma': 0.0017331000892, 'fwhm': 0.00408113883008, 'pts_per_mz': 2885},
+    '140K': {'sigma': 0.00123792863514, 'fwhm': 0.00291509916435, 'pts_per_mz': 4039},
+    '200K': {'sigma': 0.000866550044598, 'fwhm': 0.00204056941504, 'pts_per_mz': 5770},
+    '250K': {'sigma': 0.000693240035678, 'fwhm': 0.00163245553203, 'pts_per_mz': 7212},
+    '280K': {'sigma': 0.00061896431757, 'fwhm': 0.00145754958217, 'pts_per_mz': 8078},
+    '500K': {'sigma': 0.000346620017839, 'fwhm': 0.000816227766017, 'pts_per_mz': 14425},
+    '750K': {'sigma': 0.000231080011893, 'fwhm': 0.000544151844011, 'pts_per_mz': 21637},
+    '1000K': {'sigma': 0.00017331000892, 'fwhm': 0.000408113883008, 'pts_per_mz': 28850},
 }
 
 
@@ -80,8 +59,12 @@ def create_config(meta_json):
         params = RESOL_POWER_PARAMS['250K']
     elif rp200 < 390000:
         params = RESOL_POWER_PARAMS['280K']
-    else:
+    elif rp200 < 625000:
         params = RESOL_POWER_PARAMS['500K']
+    elif rp200 < 875000:
+        params = RESOL_POWER_PARAMS['750K']
+    else:
+        params = RESOL_POWER_PARAMS['1000K']
 
     return {
         "database": {
