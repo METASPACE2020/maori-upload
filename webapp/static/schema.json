@@ -65,7 +65,7 @@
         "Sample_Stabilisation": {
           "type": "string",
           "enum": [
-            "Fresh_Frozen",
+            "Flash_Frozen",
             "Formalin_Fixed",
             "Formalin_Fixed_Paraffin_Embedded",
             "Other => <free text>"
@@ -214,11 +214,6 @@
                 "Other => <free text>"
             ]
         },
-       "Alpha-tester":{
-          "type": "boolean",
-          "default": false,
-          "format": "checkbox"
-       },
       "Dataset_Name":{
           "type": "string"
        }
