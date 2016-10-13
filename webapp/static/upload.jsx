@@ -1,8 +1,7 @@
 import React from 'react'
-import qq from 'fine-uploader/lib/s3'
+import qq from 'fine-uploader/lib/all'
 import $ from 'jquery'
 import 'fine-uploader/lib/rows.css'
-
 
 class S3FineUploader extends React.Component {
     constructor (props) {
@@ -33,19 +32,12 @@ class S3FineUploader extends React.Component {
     initFineUploader() {
         const fineUploaderComponent = this;
 
-        this._fine_uploader = new qq.s3.FineUploader({
+        var options = {
             element: this.refs.s3fu,
             template: 'qq-template-manual-trigger',
-            request: {
-                endpoint: `${this.config.aws.s3_bucket}.s3.amazonaws.com`,
-                accessKey: this.config.aws.accees_key_id
-            },
             autoUpload: false,
             objectProperties: {
                 key: (id) => `${sessionStorage.getItem('session_id')}/${this._fine_uploader.getFile(id).name}`
-            },
-            signature: {
-                endpoint: '/s3/sign'
             },
             iframeSupport: {
                 localBlankPagePath: "/server/success.html"
@@ -85,7 +77,27 @@ class S3FineUploader extends React.Component {
                     }
                 }
             }
-        });
+        };
+
+        if (this.config.storage == 'local') {
+            options['request'] = {
+                endpoint: '/upload',
+                params: {'session_id': sessionStorage.getItem('session_id')}
+            };
+
+            this._fine_uploader = new qq.FineUploader(options);
+        } else {
+            options['request'] = {
+                endpoint: `${this.config.aws.s3_bucket}.s3.amazonaws.com`,
+                accessKey: this.config.aws.accees_key_id
+            };
+
+            options['signature'] = {
+                endpoint: '/s3/sign'
+            };
+
+            this._fine_uploader = new qq.s3.FineUploader(options);
+        }
 
         $('#trigger-upload').click(() => {
             if (this.uploadValidate()) {

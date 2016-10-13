@@ -1,5 +1,5 @@
 import os
-from os.path import dirname, exists, isdir, join, splitext
+from os.path import dirname, isdir, join
 import base64
 import hmac
 import hashlib
@@ -11,9 +11,9 @@ import tornado.web
 from tornado.options import define, options
 from datetime import datetime as dt
 import yaml
+import shutil
 
 from notify import post_to_slack, post_job_to_queue
-
 
 TMP_STORAGE_PATH = "/tmp"
 METADATA_FILE_NAME = "meta.json"
@@ -97,14 +97,30 @@ class SubmitHandler(tornado.web.RequestHandler):
 
     def initialize(self):
         self.config = yaml.load(open(options.config))
-        self.s3 = boto3.resource('s3', self.config['aws']['region'])
+        self.upload_dir = self.config['local']['upload_directory']
+        if self.config['storage'] == 'local':
+            self._prefix = 'file://' + self.upload_dir + '/'
+        else:
+            self.s3 = boto3.resource('s3', self.config['aws']['region'])
+            self._prefix = 's3a://' + self.config['aws']['s3_bucket'] + '/'
 
-    def upload_to_s3(self, doc, bucket, key):
+    def _input_path(self, key):
+        return self._prefix + key
+
+    def upload_document(self, doc, key):
         with tempfile.NamedTemporaryFile() as f:
             json.dump(doc, f, indent=4)
             f.flush()
-            obj = self.s3.Object(bucket, key)
-            obj.upload_file(f.name)
+
+            if self.config['storage'] == 'local':
+                dst = os.path.join(self.upload_dir, key)
+                if not os.path.exists(os.path.dirname(dst)):
+                    os.makedirs(os.path.dirname(dst))
+                shutil.copyfile(f.name, dst)
+            else:
+                bucket = self.config['aws']['s3_bucket']
+                obj = self.s3.Object(bucket, key)
+                obj.upload_file(f.name)
 
     def post(self):
         if self.request.headers["Content-Type"].startswith("application/json"):
@@ -112,10 +128,10 @@ class SubmitHandler(tornado.web.RequestHandler):
             session_id = data['session_id']
             metadata = data['formData']
 
-            self.upload_to_s3(metadata, self.config['aws']['s3_bucket'], join(session_id, METADATA_FILE_NAME))
+            self.upload_document(metadata, join(session_id, METADATA_FILE_NAME))
 
             ds_config = create_config(metadata)
-            self.upload_to_s3(ds_config, self.config['aws']['s3_bucket'], join(session_id, CONFIG_FILE_NAME))
+            self.upload_document(ds_config, join(session_id, CONFIG_FILE_NAME))
 
 
             self.set_header("Content-Type", "text/plain")
@@ -142,7 +158,7 @@ class MessageHandler(tornado.web.RequestHandler):
             msg = {
                 'ds_id': dt.now().strftime("%Y-%m-%d_%Hh%Mm%Ss"),
                 'ds_name': ds_name,
-                'input_path': 's3a://{}/{}'.format(self.config['aws']['s3_bucket'], session_id),
+                'input_path': self._input_path(session_id),
                 'user_email': metadata['Submitted_By']['Submitter']['Email'].lower()
             }
 
@@ -155,7 +171,7 @@ class MessageHandler(tornado.web.RequestHandler):
             self.write("Error: Content-Type has to be 'application/json'")
 
 
-class UploadHandler(tornado.web.RequestHandler):
+class S3UploadHandler(tornado.web.RequestHandler):
 
     def initialize(self):
         self.config = yaml.load(open(options.config))
@@ -193,18 +209,72 @@ class WebConfigHandler(tornado.web.RequestHandler):
         self.write(json.load(open(options.web_config)))
 
 
+class LocalUploadHandler(tornado.web.RequestHandler):
+
+    def initialize(self):
+        config = yaml.load(open(options.config))
+        self.upload_dir = config['local']['upload_directory']
+        self.chunks_dir = config['local']['chunks_directory']
+
+    def post(self):
+        self.handle_upload(self.request.files['qqfile'][0])
+        self.write(json.dumps({"success": True}))
+
+    def handle_upload(self, f):
+        filename = self.get_argument('qqfilename')
+        session_id = self.get_argument('session_id')
+        dest = os.path.join(self.upload_dir, session_id, filename)
+
+        total_parts = int(self.get_argument('qqtotalparts', 1))
+        part_index = int(self.get_argument('qqpartindex', 0))
+        if total_parts > 1:
+            chunk_dest = os.path.join(self.chunks_dir, session_id, filename)
+            self.save_upload(f, os.path.join(chunk_dest, str(part_index)))
+        else:
+            self.save_upload(f, dest)
+
+        print total_parts, part_index
+        if total_parts > 1 and part_index == total_parts - 1:
+            self.combine_chunks(total_parts, chunk_dest, dest)
+            shutil.rmtree(os.path.dirname(chunk_dest))
+
+    def _open_file(self, filepath):
+        destination_dir = os.path.dirname(filepath)
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        return open(filepath, 'wb+')
+
+    def save_upload(self, f, path):
+        with self._open_file(path) as destination:
+            destination.write(f.body)
+
+    def combine_chunks(self, total_parts, source_folder, dest):
+        with self._open_file(dest) as destination:
+            for i in xrange(total_parts):
+                part = os.path.join(source_folder, str(i))
+                with open(part, 'rb') as source:
+                    destination.write(source.read())
+
+
 def make_app():
     define('config', type=str)
     define('web_config', type=str)
     options.parse_command_line()
 
-    return tornado.web.Application([
+    handlers = [
         (r"/", MainHandler),
-        (r'/s3/sign', UploadHandler),
         (r"/submit", SubmitHandler),
         (r"/config.json", WebConfigHandler),
         (r"/send_msg", MessageHandler)
-    ],
+    ]
+
+    if yaml.load(open(options.config))['storage'] == 'local':
+        handlers.append((r'/upload', LocalUploadHandler))
+    else:
+        handlers.append((r'/s3/sign', S3UploadHandler))
+
+    return tornado.web.Application(
+        handlers,
         static_path=join(dirname(__file__), "static"),
         static_url_prefix='/static/',
         debug=False,

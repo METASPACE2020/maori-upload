@@ -4,6 +4,12 @@ aws:
   region: {{ aws_region }}
   s3_bucket: {{ aws_s3_bucket }}
 
+local:
+  upload_directory: {{ upload_directory }}
+  chunks_directory: {{ chunks_directory }}
+
+storage: {{ storage_type }}  # either 's3' or 'local'
+
 slack:
   channel: "{{ slack_channel }}"
   webhook_url: {{ slack_webhook_url }}
