@@ -124,6 +124,22 @@ class App extends React.Component {
 
     tryResetState() {
         if (this.state.filesUploaded.length > 0 && this.state.metadataUploaded) {
+            $.ajax({
+                url: "/send_msg",
+                data: JSON.stringify({
+                    session_id: sessionStorage.getItem('session_id'),
+                    formData: this.state.formData
+                }),
+                type: "POST",
+                contentType: "application/json",
+                success: function (data) {
+                    console.log("Send message request was posted")
+                },
+                error: function (data) {
+                    alert(`Message sending failed: ${data.responseText}.\nPlease write us on alexandrov-group@embl.de`);
+                }
+            });
+
             $('#thanks_message').html(
                 `Thank you for uploading files: <strong>${this.state.filesUploaded}</strong>`
             );
@@ -179,6 +195,7 @@ class App extends React.Component {
                         "Please don't reload the page until the uploading is finished");
 
                     app.setShowMetadataForm(false);
+                    app.setState({formData: formData});
                     app.setMetadataUploaded(true);
                 },
                 error: function (data) {

@@ -117,8 +117,28 @@ class SubmitHandler(tornado.web.RequestHandler):
             ds_config = create_config(metadata)
             self.upload_to_s3(ds_config, self.config['aws']['s3_bucket'], join(session_id, CONFIG_FILE_NAME))
 
+
+            self.set_header("Content-Type", "text/plain")
+            self.write("Uploaded to S3: {}".format(data['formData']))
+        else:
+            print(self.request.headers["Content-Type"])
+            self.write("Error: Content-Type has to be 'application/json'")
+
+
+class MessageHandler(tornado.web.RequestHandler):
+
+    def initialize(self):
+        self.config = yaml.load(open(options.config))
+
+    def post(self):
+        if self.request.headers["Content-Type"].startswith("application/json"):
+            data = json.loads(self.request.body)
+            session_id = data['session_id']
+            metadata = data['formData']
+
             ds_name = '{}//{}'.format(metadata['Submitted_By']['Institution'],
                                       metadata['metaspace_options']['Dataset_Name'])
+
             msg = {
                 'ds_id': dt.now().strftime("%Y-%m-%d_%Hh%Mm%Ss"),
                 'ds_name': ds_name,
@@ -130,9 +150,6 @@ class SubmitHandler(tornado.web.RequestHandler):
                 post_to_slack('email', " [v] Sent: {}".format(json.dumps(msg)))
             if self.config['rabbitmq']['host']:
                 post_job_to_queue(msg)
-
-            self.set_header("Content-Type", "text/plain")
-            self.write("Uploaded to S3: {}".format(data['formData']))
         else:
             print(self.request.headers["Content-Type"])
             self.write("Error: Content-Type has to be 'application/json'")
@@ -185,7 +202,8 @@ def make_app():
         (r"/", MainHandler),
         (r'/s3/sign', UploadHandler),
         (r"/submit", SubmitHandler),
-        (r"/config.json", WebConfigHandler)
+        (r"/config.json", WebConfigHandler),
+        (r"/send_msg", MessageHandler)
     ],
         static_path=join(dirname(__file__), "static"),
         static_url_prefix='/static/',
