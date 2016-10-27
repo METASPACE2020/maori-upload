@@ -8,6 +8,7 @@ class S3FineUploader extends React.Component {
     constructor (props) {
         super(props);
         this._fine_uploader = null;
+        this.filesUploaded = [];
     }
 
     getFileNames() {
@@ -77,8 +78,7 @@ class S3FineUploader extends React.Component {
                 },
                 onAllComplete: function (succeeded, failed) {
                     if (failed.length == 0) {
-                        let fileNames = this.getUploads().map(obj => obj.originalName);
-                        fineUploaderComponent.props.setFilesUploaded(fileNames);
+                        fineUploaderComponent.filesUploaded = this.getUploads().map(obj => obj.originalName);
                     }
                     else {
                         console.log('Failed file IDs: ', failed);

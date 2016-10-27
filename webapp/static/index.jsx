@@ -108,7 +108,6 @@ class App extends React.Component {
 
         this.state = {
             showMetadataForm: false,
-            filesUploaded: [],
             metadataUploaded: false,
             formData: parsedFormData
         };
@@ -123,7 +122,7 @@ class App extends React.Component {
     }
 
     tryResetState() {
-        if (this.state.filesUploaded.length > 0 && this.state.metadataUploaded) {
+        if (this._uploader.filesUploaded.length > 0 && this.state.metadataUploaded) {
             $.ajax({
                 url: "/send_msg",
                 data: JSON.stringify({
@@ -141,7 +140,7 @@ class App extends React.Component {
             });
 
             $('#thanks_message').html(
-                `Thank you for uploading files: <strong>${this.state.filesUploaded}</strong>`
+                `Thank you for uploading files: <strong>${this._uploader.filesUploaded}</strong>`
             );
             this.resetState();
             this._uploader.resetFineUploader();
@@ -163,10 +162,6 @@ class App extends React.Component {
         else
             new_state.formData.metaspace_options.Dataset_Name = name;
         this.setState(new_state);
-    }
-
-    setFilesUploaded(files) {
-        this.setState({'filesUploaded': files}, this.tryResetState);
     }
 
     setMetadataUploaded(uploaded) {
@@ -216,7 +211,6 @@ class App extends React.Component {
             <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
                 <S3FineUploader ref={x => this._uploader = x}
                                 setShowMetadataForm={this.setShowMetadataForm.bind(this)}
-                                setFilesUploaded={this.setFilesUploaded.bind(this)}
                                 setDatasetName={this.setDatasetName.bind(this)}/>
                 { metadataForm }
             </div>
