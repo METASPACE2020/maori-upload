@@ -65,7 +65,7 @@
         "Sample_Stabilisation": {
           "type": "string",
           "enum": [
-            "Flash_Frozen",
+            "Fresh_Frozen",
             "Formalin_Fixed",
             "Formalin_Fixed_Paraffin_Embedded",
             "Other => <free text>"
