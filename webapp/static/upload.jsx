@@ -17,17 +17,19 @@ class S3FineUploader extends React.Component {
 
     uploadValidate() {
         let fnames = this.getFileNames();
-
         if (fnames.length < 2) {
             alert(qq.format("Please choose 2 files for upload"));
             return false;
         }
 
-        if (fnames[0].split('.').slice(0, -1)[0] != fnames[1].split('.').slice(0, -1)[0]) {
-            alert(qq.format("Please choose 2 files with the same base name but different extensions"));
+        // consider only the last two selected files
+        let [first, second] = [fnames.slice(-2)[0], fnames.slice(-1)[0]];
+        let [fext, sext] = [first.split('.').slice(-1)[0], second.split('.').slice(-1)[0]];
+        let [fbn, sbn] = [first.split('.').slice(0, -1).join("."), second.split('.').slice(0, -1).join(".")];
+        if (fext == sext || fbn != sbn) {
+            alert("Incompatible file names! Please select 2 files with the same name but different extension");
             return false;
         }
-
         return true;
     }
 
