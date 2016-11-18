@@ -136,7 +136,7 @@ class MessageHandler(tornado.web.RequestHandler):
             session_id = data['session_id']
             metadata = data['formData']
 
-            ds_name = '{}//{}'.format(metadata['Submitted_By']['Institution'],
+            ds_name = u'{}//{}'.format(metadata['Submitted_By']['Institution'],
                                       metadata['metaspace_options']['Dataset_Name'])
 
             msg = {

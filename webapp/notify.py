@@ -23,7 +23,7 @@ def post_job_to_queue(m):
     ch.queue_declare(queue='sm_annotate', durable=True)
     ch.basic_publish(exchange='',
                      routing_key='sm_annotate',
-                     body=json.dumps(m),
+                     body=json.dumps(m, ensure_ascii=False),
                      properties=pika.BasicProperties(
                          delivery_mode=2,  # make message persistent
                      ))
