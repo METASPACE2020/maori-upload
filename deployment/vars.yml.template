@@ -5,7 +5,8 @@ project_name: maori-upload
 project_root: /opt/dev
 project_path: "{{  project_root }}/{{ project_name }}"
 project_repo: https://github.com/alexandrovteam/maori-upload.git
-branch: master
+branch: rel-v0.2
+
 system_packages:
   - git
   - htop
@@ -25,7 +26,9 @@ aws_access_key_id:
 aws_secret_access_key:
 aws_region:
 aws_s3_bucket:
+
 slack_channel:
 slack_webhook_url:
+
 rabbitmq_host:
 rabbitmq_password:
