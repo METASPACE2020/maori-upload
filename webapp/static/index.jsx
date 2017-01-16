@@ -211,6 +211,7 @@ class App extends React.Component {
             <div style={{width: '80%', maxWidth: '1000px', padding: '50px'}}>
                 <S3FineUploader ref={x => this._uploader = x}
                                 setShowMetadataForm={this.setShowMetadataForm.bind(this)}
+                                tryResetState={this.tryResetState.bind(this)}
                                 setDatasetName={this.setDatasetName.bind(this)}/>
                 { metadataForm }
             </div>

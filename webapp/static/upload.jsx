@@ -7,8 +7,6 @@ import 'fine-uploader/lib/rows.css'
 class S3FineUploader extends React.Component {
     constructor (props) {
         super(props);
-        this._fine_uploader = null;
-        this.filesUploaded = [];
     }
 
     getFileNames() {
@@ -21,7 +19,6 @@ class S3FineUploader extends React.Component {
             alert(qq.format("Please choose 2 files for upload"));
             return false;
         }
-
         // consider only the last two selected files
         let [first, second] = [fnames.slice(-2)[0], fnames.slice(-1)[0]];
         let [fext, sext] = [first.split('.').slice(-1)[0], second.split('.').slice(-1)[0]];
@@ -34,6 +31,9 @@ class S3FineUploader extends React.Component {
     }
 
     initFineUploader() {
+        this._fine_uploader = null;
+        this.filesUploaded = [];
+
         const fineUploaderComponent = this;
 
         this._fine_uploader = new qq.s3.FineUploader({
@@ -85,6 +85,7 @@ class S3FineUploader extends React.Component {
                     else {
                         console.log('Failed file IDs: ', failed);
                     }
+                    fineUploaderComponent.props.tryResetState();
                 }
             }
         });

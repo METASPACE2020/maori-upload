@@ -6,6 +6,7 @@ import hashlib
 import json
 import boto3
 import tempfile
+import re
 import tornado.ioloop
 import tornado.web
 from tornado.options import define, options
@@ -136,8 +137,9 @@ class MessageHandler(tornado.web.RequestHandler):
             session_id = data['session_id']
             metadata = data['formData']
 
-            ds_name = '{}//{}'.format(metadata['Submitted_By']['Institution'],
+            ds_name = u'{}//{}'.format(metadata['Submitted_By']['Institution'],
                                       metadata['metaspace_options']['Dataset_Name'])
+            ds_name = re.sub(',', '_', ds_name)
 
             msg = {
                 'ds_id': dt.now().strftime("%Y-%m-%d_%Hh%Mm%Ss"),
