@@ -1,173 +1,83 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <link rel='stylesheet' href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.6/spacelab/bootstrap.min.css"/>
+<head>
+    <meta http-equiv="Refresh" content="15;URL=http://annotate.metaspace2020.eu/#/upload">
+    <meta charset="UTF-8">
+    <title>PLEASE NOTE NEW ADDRESS</title>
+    <meta name="description" content="Our site has moved to a new address. Please note the change of address." >
 
-        <!-- copy style for form-group from col-sm-6 -->
-        <style type="text/css">
-         @media (min-width: 768px) {
-             form > .form-group > fieldset > .form-group.field-object {
-                 float: left;
-                 width: 50%;
-                 position: relative;
-                 min-height: 1px;
-                 padding-left: 15px;
-                 padding-right: 15px;
-             }
-         }
+    <!-- Mobile Specific Meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
 
-         legend {
-             background: #fff;
-             padding: 2px 4px;
-         }
+    <link href='http://fonts.googleapis.com/css?family=Noto+Sans:400,700' rel='stylesheet' type='text/css'>
 
-         form > fieldset > legend,
-         form > .form-group > fieldset > legend,
-         form > .form-group > fieldset > .form-group > fieldset > legend {
-             margin-bottom: 0.5em;
-             float: none;
-         }
+    <style>
 
-         form > fieldset,
-         form > .form-group > fieldset,
-         form > .form-group > fieldset > .form-group > fieldset {
-             border:1px solid #999;
-             box-shadow:0 0 10px #999;
-             padding: 10px;
-         }
-        </style>
+        body{
+            font-family: 'Noto Sans', Arial, serif;
+            font-weight: 400;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            line-height: 1.618em;
+            background: rgba(0, 105, 224, 0.85) url('lake.jpg') center center no-repeat fixed;
+            background-size: cover;
+        }
+        h2{
+            font-family: 'Noto Sans', Arial, serif;
+            font-weight: 700;
+            font-size:40px;
+            line-height: 1.618em;
+        }
+        section{
+            max-width:800px;
+            margin:8% auto 1em auto;
+            background-color: transparent;
+            opacity: 0.8;
+            filter: alpha(opacity=80); /* For IE8 and earlier */
+            color:#fff;
+            padding:1em 5%;
+        }
 
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!--<link href="client/fine-uploader-new.css" rel="stylesheet">-->
-        <!--<script src="client/fine-uploader.js"></script>-->
+        a{
+            color: #00fa66;
+        }
+        a:focus{
+            outline:none;
+            outline-offset:inherit;
+        }
+        @media (max-device-width: 1027px) {
 
-        <script type="text/template" id="qq-template-manual-trigger">
-            <div class="qq-uploader-selector qq-uploader" qq-drop-area-text="Drop here the .imzML and .ibd files">
-                <div class="qq-total-progress-bar-container-selector qq-total-progress-bar-container">
-                    <div role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" class="qq-total-progress-bar-selector qq-progress-bar qq-total-progress-bar"></div>
-                </div>
-                <div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>
-                    <span class="qq-upload-drop-area-text-selector"></span>
-                </div>
-                <div class="buttons">
-                    <div id="select-files-button" class="qq-upload-button-selector qq-upload-button">
-                        <div>Select files</div>
-                    </div>
-                    <button type="button" id="trigger-upload" class="qq-upload-button">
-                        <i class="icon-upload icon-white"></i> Upload
-                    </button>
-                </div>
-                <span class="qq-drop-processing-selector qq-drop-processing">
-                    <span>Processing dropped files...</span>
-                    <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>
-                </span>
-                <ul class="qq-upload-list-selector qq-upload-list" aria-live="polite" aria-relevant="additions removals">
-                    <li>
-                        <div class="qq-progress-bar-container-selector">
-                            <div role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" class="qq-progress-bar-selector qq-progress-bar"></div>
-                        </div>
-                        <span class="qq-upload-spinner-selector qq-upload-spinner"></span>
-                        <img class="qq-thumbnail-selector" qq-max-size="100" qq-server-scale>
-                        <span class="qq-upload-file-selector qq-upload-file"></span>
-                        <span class="qq-edit-filename-icon-selector qq-edit-filename-icon" aria-label="Edit filename"></span>
-                        <input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">
-                        <span class="qq-upload-size-selector qq-upload-size"></span>
-                        <button type="button" class="qq-btn qq-upload-cancel-selector qq-upload-cancel">Cancel</button>
-                        <button type="button" class="qq-btn qq-upload-retry-selector qq-upload-retry">Retry</button>
-                        <button type="button" class="qq-btn qq-upload-delete-selector qq-upload-delete">Delete</button>
-                        <span role="status" class="qq-upload-status-text-selector qq-upload-status-text"></span>
-                    </li>
-                </ul>
-
-                <dialog class="qq-alert-dialog-selector">
-                    <div class="qq-dialog-message-selector"></div>
-                    <div class="qq-dialog-buttons">
-                        <button type="button" class="qq-cancel-button-selector">Close</button>
-                    </div>
-                </dialog>
-
-                <dialog class="qq-confirm-dialog-selector">
-                    <div class="qq-dialog-message-selector"></div>
-                    <div class="qq-dialog-buttons">
-                        <button type="button" class="qq-cancel-button-selector">No</button>
-                        <button type="button" class="qq-ok-button-selector">Yes</button>
-                    </div>
-                </dialog>
-
-                <dialog class="qq-prompt-dialog-selector">
-                    <div class="qq-dialog-message-selector"></div>
-                    <input type="text">
-                    <div class="qq-dialog-buttons">
-                        <button type="button" class="qq-cancel-button-selector">Cancel</button>
-                        <button type="button" class="qq-ok-button-selector">Ok</button>
-                    </div>
-                </dialog>
-            </div>
-        </script>
-
-        <style>
-            #trigger-upload {
-                color: white;
-                background-color: #0069e0;
-                font-size: 14px;
-                padding: 7px 20px;
-                background-image: none;
+            body{
+                text-align:center;
+                font-size:larger;
+            }
+            section{
+                max-width: 90%;
             }
 
-            #fine-uploader-manual-trigger .qq-upload-button {
-                margin-right: 15px;
+        }
+
+        @media (max-device-width: 640px) {
+            section{
+                max-width: 97%;
             }
 
-            #fine-uploader-manual-trigger .buttons {
-                width: 36%;
-            }
+        }
 
-            #fine-uploader-manual-trigger .qq-uploader .qq-total-progress-bar-container {
-                width: 60%;
-            }
 
-            .qq-uploader {
-                min-height: 50px;
-                max-height: 150px;
-            }
+    </style>
+</head>
+<body>
 
-            #select-files-button {
-                background: #0069e0;
-            }
+<section>
+    <h2>METASPACE upload site has moved!</h2>
 
-            #instructions {
-                width: 80%;
-                max-width: 1000px;
-                padding: 50px 50px 0px 50px;
-            }
+    <h3>The new web address for this page is <a href="http://annotate.metaspace2020.eu/#/upload">http://annotate.metaspace2020.eu</a></h3>
+    <h3>...You will be transferred to the new site in a moment...</h3>
 
-            #thanks_message {
-                width: 80%;
-                max-width: 1000px;
-                padding: 20px 50px 0px 50px;
-                color: #20f503;
-            }
-        </style>
+    <p>If you have waited more than a few seconds and you are still seeing this message, please click on the link above! Thank you.</p>
+</section>
 
-        <title>METASPACE Upload Web Application</title>
-    </head>
-
-    <body>
-        <div id="instructions">
-            <p>Welcome to the upload interface for the <a href="http://metaspace2020.eu">METASPACE</a> annotation engine</p>
-            <p>
-                Datasets can be uploaded in the <a href="http://imzml.org">imzML</a> format as <b>centroided</b> spectra.
-                Please check out our <a href="http://metaspace2020.eu/imzml">instructions</a> for converting datasets into this format:
-                If you are experiencing difficulties in the conversion, please contact your instrument vendor.
-            </p>
-            <p>After processing your annotations will be visible online through our <a href="http://alpha.metaspace2020.eu">results browsing interface</a>.</p>
-        </div>
-
-        <div id="thanks_message">
-        </div>
-
-        <div id="app-container"></div>
-        <script src="static/bundle.js"></script>
-    </body>
+</body>
 </html>

@@ -202,10 +202,10 @@ def make_app():
 
     return tornado.web.Application([
         (r"/", MainHandler),
-        (r'/s3/sign', UploadHandler),
-        (r"/submit", SubmitHandler),
-        (r"/config.json", WebConfigHandler),
-        (r"/send_msg", MessageHandler)
+        # (r'/s3/sign', UploadHandler),
+        # (r"/submit", SubmitHandler),
+        # (r"/config.json", WebConfigHandler),
+        # (r"/send_msg", MessageHandler)
     ],
         static_path=join(dirname(__file__), "static"),
         static_url_prefix='/static/',
